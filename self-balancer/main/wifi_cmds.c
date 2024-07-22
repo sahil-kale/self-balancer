@@ -33,7 +33,6 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_FAIL_BIT      BIT1
 
 static const char *TAG = "wifi station";
-static const char *V4TAG = "mcast-ipv4";
 
 static void init_udp_server_task();
 static int s_retry_num = 0;
@@ -43,6 +42,8 @@ struct sockaddr_storage source_addr;
 static esp_netif_t *netif_interface;
 struct sockaddr_in6 dest_addr;
 
+static bool client_connected = false;
+
 #define MAX_RX_BUFFER 1024
 
 void run_wifi_cmds(void)
@@ -50,7 +51,6 @@ void run_wifi_cmds(void)
     uint8_t rx_buffer[MAX_RX_BUFFER] = {0};
     socklen_t socklen = sizeof(source_addr);
     int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
-    // Error occurred during receiving
     if (len > 0)
     {
         char addr_str[128];
@@ -65,42 +65,19 @@ void run_wifi_cmds(void)
         ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
         ESP_LOGI(TAG, "%s", rx_buffer);
 
-        int err = sendto(sock, rx_buffer, len, 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
-        if (err < 0) {
-            ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
-        }
+        client_connected = true;
     }
 }
 
 int8_t send_udp_packet(void *buffer, size_t len) {
-    #if 0
-    struct addrinfo hints = {
-        .ai_flags = AI_PASSIVE,
-        .ai_socktype = SOCK_DGRAM,
-    };
-    struct addrinfo *res;
-    int err = getaddrinfo(MULTICAST_IPV4_ADDR, NULL, &hints, &res);
+    if (!client_connected) {
+        ESP_LOGE(TAG, "Client not connected");
+        return -1;
+    }
+    int err = sendto(sock, buffer, len, 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
     if (err < 0) {
-        ESP_LOGE(TAG, "getaddrinfo() failed for IPV4 destination address. error: %d", err);
-        return err;
+        ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
     }
-    if (res == 0) {
-        ESP_LOGE(TAG, "getaddrinfo() did not return any addresses");
-        return 1;
-    }
-
-    ((struct sockaddr_in *)res->ai_addr)->sin_port = htons(PORT);
-    vTaskDelay(1); //Delay to wait for connection
-
-    err = sendto(sock, buffer, len, 0, res->ai_addr, res->ai_addrlen);
-    freeaddrinfo(res);
-    if (err < 0) {
-        ESP_LOGE(TAG, "IPV4 sendto failed. errno: %d", errno);
-        return errno;
-    }
-
-    ESP_LOGI(TAG, "Sent %d bytes to IPV4 multicast address %s", err, MULTICAST_IPV4_ADDR);
-#endif
     return 0;
 }
 

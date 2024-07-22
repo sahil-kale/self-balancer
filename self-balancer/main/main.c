@@ -230,7 +230,7 @@ void app_main(void) {
         char message[] = "hello world";
         send_udp_packet(message, sizeof(message));
         run_wifi_cmds();
-        vTaskDelay(pdMS_TO_TICKS(100));  // Delay to print once per tick
+        vTaskDelay(pdMS_TO_TICKS(1));  // Delay to print once per tick
     }
 
     fflush(stdout);
