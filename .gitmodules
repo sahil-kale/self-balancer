@@ -1,3 +1,6 @@
 [submodule "self-balancer/lsm6ds3-pid"]
 	path = self-balancer/lsm6ds3-pid
 	url = git@github.com:STMicroelectronics/lsm6ds3-pid.git
+[submodule "self-balancer/nanopb"]
+	path = self-balancer/nanopb
+	url = git@github.com:nanopb/nanopb.git

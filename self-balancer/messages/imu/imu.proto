@@ -1,0 +1,17 @@
+// A very simple protocol definition, consisting of only
+// one message.
+
+syntax = "proto2";
+
+message GyroMeasurements {
+    required float x_dps = 1;
+    required float y_dps = 2;
+    required float z_dps = 3;
+}
+
+message AccelMeasurements {
+    required float x_m_per_s_squared = 1;
+    required float y_m_per_s_squared = 2;
+    required float z_m_per_s_squared = 3;
+}
+

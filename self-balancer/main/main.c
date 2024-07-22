@@ -178,6 +178,7 @@ void app_main(void) {
         printf("Failed to read WHO_AM_I register\n");
     }
 
+#ifdef PRINT_DATA
     // get the FS value for gyro 
     const float gyro_sensitivity = 8.75; // mdps/LSB
     const float gyro_scale = gyro_sensitivity * (M_PI / 180.0f) * 0.001f;  // Convert mdps to rad/s
@@ -185,6 +186,7 @@ void app_main(void) {
     // get the FS value for accelerometer
     const float accel_sensitivity = 0.061; // mg/LSB
     const float accel_scale = accel_sensitivity * 9.81f / 1000.0f;  // Convert mg to m/s²
+#endif
 
     while (whoami == LSM6DS3_ID) {
         lsm6ds3_status_reg_t status;
@@ -193,11 +195,11 @@ void app_main(void) {
         if (status.xlda) {  // Accelerometer data available
             int16_t accel_data_raw[3];
             lsm6ds3_acceleration_raw_get(&imu_ctx, accel_data_raw);
+#ifdef PRINT_DATA
             float accel_data[3];
             for (int i = 0; i < 3; i++) {
                 accel_data[i] = accel_data_raw[i] * accel_scale;  // Convert mg to m/s²
             }
-#ifdef PRINT_DATA
             printf("Timestamp: %lu, Acceleration: x=%.2f m/s², y=%.2f m/s², z=%.2f m/s²\n", 
                     (unsigned long)time(NULL), accel_data[0], accel_data[1], accel_data[2]);
 #endif
@@ -206,11 +208,11 @@ void app_main(void) {
         if (status.gda) {  // Gyroscope data available
             int16_t gyro_data_raw[3];
             lsm6ds3_angular_rate_raw_get(&imu_ctx, gyro_data_raw);
+#ifdef PRINT_DATA
             float gyro_data[3];
             for (int i = 0; i < 3; i++) {
                 gyro_data[i] = gyro_data_raw[i] * gyro_scale;  // Convert mdps to rad/s
             }
-#ifdef PRINT_DATA
             printf("Timestamp: %lu, Gyroscope: x=%.2f rad/s, y=%.2f rad/s, z=%.2f rad/s\n", 
                     (unsigned long)time(NULL), gyro_data[0], gyro_data[1], gyro_data[2]);
 #endif
@@ -219,8 +221,8 @@ void app_main(void) {
         if (status.tda) {  // Temperature data available
             int16_t temperature_raw;
             lsm6ds3_temperature_raw_get(&imu_ctx, &temperature_raw);
-            float temperature = temperature_raw / 16.0f + 25.0f;  // Convert to °C
 #ifdef PRINT_DATA
+            float temperature = temperature_raw / 16.0f + 25.0f;  // Convert to °C
             printf("Timestamp: %lu, Temperature: %.2f °C\n", 
                     (unsigned long)time(NULL), temperature);
 #endif
