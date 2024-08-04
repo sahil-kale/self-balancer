@@ -7,5 +7,8 @@ cmake_minimum_required(VERSION 3.5)
 # Add -Werror to the compilation flags
 #add_compile_options(-Werror)
 
+#suppress Wmissing-field-initializers
+add_compile_options(-Wno-missing-field-initializers)
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(self-balancer)
