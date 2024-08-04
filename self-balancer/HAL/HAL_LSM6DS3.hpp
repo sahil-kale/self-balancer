@@ -27,6 +27,7 @@ class HAL_LSM6DS3 : public BaseIMU {
     float getTemperature();
 
     private:
+    bool imuInitialized = false;
     Vector3D acceleration;
     Vector3D gyro;
     float temperature;

@@ -79,18 +79,19 @@ void HAL_LSM6DS3::init(spi_host_device_t spi_host, uint8_t miso, uint8_t mosi, u
     lsm6ds3_gy_data_rate_set(&imu_ctx, LSM6DS3_GY_ODR_1k66Hz);
 
     uint8_t whoami = 0x00;
-    int32_t wifiret = lsm6ds3_device_id_get(&imu_ctx, &whoami);
-    if (wifiret == 0) {
+    if (lsm6ds3_device_id_get(&imu_ctx, &whoami) == 0) {
+        imuInitialized = (whoami == LSM6DS3_ID);
         printf("WHO_AM_I register: 0x%02x\n", whoami);
     } else {
+        imuInitialized = false;
         printf("Failed to read WHO_AM_I register\n");
     }
 
-    const float gyro_sensitivity = 8.75; // mdps/LSB
+    const float gyro_sensitivity = 8.75; // mdps/LSB (TODO: Get this from polling the device mapping from data rate)
     this->gyro_scale = gyro_sensitivity * (M_PI / 180.0f) * 0.001f;  // Convert mdps to rad/s
 
     // get the FS value for accelerometer
-    const float accel_sensitivity = 0.061; // mg/LSB
+    const float accel_sensitivity = 0.061; // mg/LSB (TODO: Get this from polling the device mapping from data rate)
     this->accel_scale = accel_sensitivity * 9.81f / 1000.0f;  // Convert mg to m/s²
 
 }
@@ -113,9 +114,10 @@ void HAL_LSM6DS3::poll() {
         this->acceleration.z = accel_data[2];
         this->acceleration.timestamp = (uint32_t)time(NULL);
         this->acceleration.valid = true;
-
+#ifdef PRINT_DATA
         printf("Timestamp: %lu, Acceleration: x=%.2f m/s², y=%.2f m/s², z=%.2f m/s²\n", 
                 (unsigned long)time(NULL), accel_data[0], accel_data[1], accel_data[2]);
+#endif
     }
 
     if (status.gda) {  // Gyroscope data available
@@ -132,16 +134,20 @@ void HAL_LSM6DS3::poll() {
         this->gyro.z = gyro_data[2];
         this->gyro.timestamp = (uint32_t)time(NULL);
         this->gyro.valid = true;
+#ifdef PRINT_DATA
         printf("Timestamp: %lu, Gyroscope: x=%.2f rad/s, y=%.2f rad/s, z=%.2f rad/s\n", 
                 (unsigned long)time(NULL), gyro_data[0], gyro_data[1], gyro_data[2]);
+#endif
     }
 
     if (status.tda) {  // Temperature data available
         int16_t temperature_raw;
         lsm6ds3_temperature_raw_get(&imu_ctx, &temperature_raw);
         this->temperature = temperature_raw / 16.0f + 25.0f;  // Convert to °C
+#ifdef PRINT_DATA
         printf("Timestamp: %lu, Temperature: %.2f °C\n", 
                 (unsigned long)time(NULL), this->temperature);
+#endif
     }
 }
 
@@ -157,7 +163,7 @@ int32_t HAL_LSM6DS3::platform_write(uint8_t reg, const uint8_t *bufp, uint16_t l
     t.tx_buffer = data;
     t.user = (void *)0;
 
-    esp_err_t ret = spi_device_transmit(spi, &t);
+    esp_err_t ret = spi_device_transmit(this->spi, &t);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "SPI Write Error: %s", esp_err_to_name(ret));
         return -1;
