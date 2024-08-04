@@ -2,7 +2,7 @@ import socket
 import argparse
 import time
 
-DEFAULT_SERVER_IP = "192.168.1.41"
+DEFAULT_SERVER_IP = "10.0.0.202"
 DEFAULT_SERVER_PORT = 5007
 
 if __name__ == '__main__':
