@@ -1,3 +1,5 @@
+#include "HAL_Wifi.hpp"
+
 /**
  * @file wifi_cmds.c
  * This code taken from: 
@@ -6,7 +8,6 @@
  * 
  */
 
-#include "wifi_cmds.h"
 
 #include "config.h"
 #include "esp_event.h"
@@ -27,61 +28,21 @@
 #define LISTEN_ALL_IF 1
 #define ADDR_FAMILY   AF_INET
 
+static const char *TAG = "wifi station";
+
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
-static const char *TAG = "wifi station";
-
-static void init_udp_server_task();
-static int s_retry_num = 0;
-
-static int8_t sock = 0;
-struct sockaddr_storage source_addr;
-static esp_netif_t *netif_interface;
-struct sockaddr_in6 dest_addr;
-
-static bool client_connected = false;
-
 #define MAX_RX_BUFFER 1024
 
-void run_wifi_cmds(void)
-{
-    uint8_t rx_buffer[MAX_RX_BUFFER] = {0};
-    socklen_t socklen = sizeof(source_addr);
-    int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
-    if (len > 0)
-    {
-        char addr_str[128];
-        // Get the sender's ip address as string
-        if (source_addr.ss_family == PF_INET) {
-            inet_ntoa_r(((struct sockaddr_in *)&source_addr)->sin_addr, addr_str, sizeof(addr_str) - 1);
-        } else if (source_addr.ss_family == PF_INET6) {
-            inet6_ntoa_r(((struct sockaddr_in6 *)&source_addr)->sin6_addr, addr_str, sizeof(addr_str) - 1);
-        }
-
-        rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
-        ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
-        ESP_LOGI(TAG, "%s", rx_buffer);
-
-        client_connected = true;
-    }
-}
-
 int8_t send_udp_packet(void *buffer, size_t len) {
-    if (!client_connected) {
-        ESP_LOGE(TAG, "Client not connected");
-        return -1;
-    }
-    int err = sendto(sock, buffer, len, 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
-    if (err < 0) {
-        ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
-    }
+
     return 0;
 }
 
-static void init_udp_server_task() {
+void HAL_Wifi::init_udp_server_task() {
     int addr_family = ADDR_FAMILY;
     int ip_protocol = 0;
 
@@ -101,7 +62,7 @@ static void init_udp_server_task() {
     sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
     if (sock < 0) {
         ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
-        goto err;
+        return;
     }
     ESP_LOGI(TAG, "Socket created");
 
@@ -115,14 +76,12 @@ static void init_udp_server_task() {
     int nonblocking = 1;
     if (lwip_ioctl(sock, FIONBIO, &nonblocking) < 0) {
         ESP_LOGE(TAG, "Unable to set non-blocking: errno %d", errno);
-        goto err;
+        return;
     }
-
-err:
-    return;
 }
 
-static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+static int s_retry_num = 0;
+void HAL_Wifi::event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
@@ -142,20 +101,11 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
     }
 }
 
-uint8_t reconnect_wifi() {
-    vTaskDelay(500);
-    esp_err_t err;
-    uint8_t s_retry_num = 0;
-    if (s_retry_num < WIFI_MAX_RETRY) {
-        err = esp_wifi_connect();
-        s_retry_num++;
-        ESP_LOGI(TAG, "retry to connect to the AP");
-    }
+HAL_Wifi::HAL_Wifi() {}
 
-    return !(err == ESP_OK);
-}
+HAL_Wifi::~HAL_Wifi() {}
 
-uint8_t wifi_init_sta(void) {
+void HAL_Wifi::init() {
     s_wifi_event_group = xEventGroupCreate();
 
     ESP_ERROR_CHECK(esp_netif_init());
@@ -183,7 +133,9 @@ uint8_t wifi_init_sta(void) {
                  * not advisable to be used. Incase your Access point doesn't
                  * support WPA2, these mode can be enabled by commenting below
                  * line */
-                .threshold.authmode = WIFI_AUTH_WPA2_PSK,
+                .threshold = {
+                    .authmode = WIFI_AUTH_WPA2_PSK
+                },
 
                 .pmf_cfg = {.capable = true, .required = false},
             },
@@ -206,10 +158,10 @@ uint8_t wifi_init_sta(void) {
         ESP_LOGI(TAG, "connected to ap SSID:%s password:%s", WIFI_SSID, WIFI_KEY);
     } else if (bits & WIFI_FAIL_BIT) {
         ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s", WIFI_SSID, WIFI_KEY);
-        return 1;
+        return;
     } else {
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
-        return 2;
+        return;
     }
 
     /* The event will not be processed after unregister */
@@ -218,5 +170,43 @@ uint8_t wifi_init_sta(void) {
     vEventGroupDelete(s_wifi_event_group);
 
     init_udp_server_task();
+}
+
+void HAL_Wifi::run() {
+    uint8_t rx_buffer[MAX_RX_BUFFER] = {0};
+    socklen_t socklen = sizeof(source_addr);
+    int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+    if (len > 0)
+    {
+        char addr_str[128];
+        // Get the sender's ip address as string
+        if (source_addr.ss_family == PF_INET) {
+            inet_ntoa_r(((struct sockaddr_in *)&source_addr)->sin_addr, addr_str, sizeof(addr_str) - 1);
+        } else if (source_addr.ss_family == PF_INET6) {
+            inet6_ntoa_r(((struct sockaddr_in6 *)&source_addr)->sin6_addr, addr_str, sizeof(addr_str) - 1);
+        }
+
+        rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
+        ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
+        ESP_LOGI(TAG, "%s", rx_buffer);
+
+        client_connected = true;
+    }
+}
+
+bool HAL_Wifi::send(const uint8_t* buffer, size_t length) {
+    if (!client_connected) {
+        ESP_LOGE(TAG, "Client not connected");
+        return false;
+    }
+    int err = sendto(sock, buffer, length, 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
+    if (err < 0) {
+        ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
+    }
+
+    return true;
+}
+
+size_t HAL_Wifi::receive(uint8_t* buffer, size_t length) {
     return 0;
 }
