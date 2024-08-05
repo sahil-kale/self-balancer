@@ -5,7 +5,6 @@
 #include "lsm6ds3_reg.h"
 #include "sdkconfig.h"
 #include "time.h"
-#include "wifi_cmds.h"
 #include <string.h>
 #include "nvs_flash.h"
 #include "app.h"
@@ -27,17 +26,6 @@ void app_main(void) {
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK( ret );
-
-    //Initalize wifi
-    if(wifi_init_sta())
-    {
-        ESP_LOGE("main", "Failed to initialize wifi");
-    }
-    else
-    {
-        ESP_LOGI("main", "Wifi initialized");
-    }
-    vTaskDelay(pdMS_TO_TICKS(1));
 
     app_run();
 

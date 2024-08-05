@@ -10,13 +10,7 @@
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include "wifi_cmds.h"
-#ifdef __cplusplus
-}
-#endif
+#include "HAL_Wifi.hpp"
 
 #define IMU_SPI_HOST SPI3_HOST
 #define SPI1_PIN_NUM_MISO 13
@@ -74,7 +68,6 @@ void app_run() {
     gpio_set_level((gpio_num_t)MOTOR_SLEEP_GPIO, 1);
     
 
-    // create new LSM6DS3 object
     HAL_LSM6DS3 imu;
     HAL_Motor leftMotor("leftMotor");
     HAL_Motor rightMotor("rightMotor");
@@ -90,6 +83,10 @@ void app_run() {
     ESP_ERROR_CHECK(mcpwm_timer_enable(timer));
     ESP_ERROR_CHECK(mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP));
 
+    // Initialize the wifi
+    HAL_Wifi wifi;
+    wifi.init();
+
 
     while(true)
     {
@@ -100,8 +97,8 @@ void app_run() {
         rightMotor.getCurrent();
         // send a udp packet with the message "hello world"
         char message[] = "hello world";
-        send_udp_packet(message, sizeof(message));
-        run_wifi_cmds();
+        wifi.send((uint8_t*)message, sizeof(message));
+        wifi.run();
         vTaskDelay(pdMS_TO_TICKS(100));  // Delay to print once per tick
     }
 
