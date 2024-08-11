@@ -23,7 +23,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test/libs/googletest ${CMAKE_CURREN
 add_definitions(-DUNIT_TEST)
 # application sources
 file(GLOB_RECURSE DUMMY_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/dummy/*.cpp)
-# print the sources
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/comm)
+file(GLOB_RECURSE COMM_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/comm/*.cpp)
 
 
 # Glob recurse the headers inside test/
@@ -32,9 +33,14 @@ file(GLOB_RECURSE TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/test/*.hpp)
 file(GLOB_RECURSE TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../devices)
-add_library(MAIN_SOURCES ${DUMMY_SOURCES})
+
+# print out the current source dir
+message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_library(MAIN_SOURCES ${DUMMY_SOURCES} ${COMM_SOURCES})
 target_compile_options(MAIN_SOURCES PRIVATE -pedantic -pedantic-errors -Wfloat-equal -Wredundant-decls  -Wswitch-default  -pedantic -Wconversion)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/mocks)
 add_executable(${This} ${TEST_SOURCES})
 #target_compile_options(${This} PUBLIC -pedantic -pedantic-errors)
 # Link the executable with the GoogleTest libraries
