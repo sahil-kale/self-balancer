@@ -25,23 +25,30 @@ add_definitions(-DUNIT_TEST)
 file(GLOB_RECURSE DUMMY_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/dummy/*.cpp)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/comm)
 file(GLOB_RECURSE COMM_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/comm/*.cpp)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/telem)
+file(GLOB_RECURSE TELEMETRY_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/telem/*.cpp)
+
+# Message sources - located at ../generated/messages/**/*.c
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../generated)
 
 
-# Glob recurse the headers inside test/
-file(GLOB_RECURSE TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/test/*.hpp)
-# Glob recurse the sources inside test/
-file(GLOB_RECURSE TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp)
+# include nanopb, located at ../nanopb/
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../nanopb)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../devices)
 
-# print out the current source dir
-message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
-
-add_library(MAIN_SOURCES ${DUMMY_SOURCES} ${COMM_SOURCES})
+add_library(MAIN_SOURCES ${DUMMY_SOURCES} ${COMM_SOURCES} ${TELEMETRY_SOURCES} )
 target_compile_options(MAIN_SOURCES PRIVATE -pedantic -pedantic-errors -Wfloat-equal -Wredundant-decls  -Wswitch-default  -pedantic -Wconversion)
 
+# Glob recurse the sources inside test/
+file(GLOB_RECURSE TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp)
+# compile nanopb sources
+file(GLOB NANOPB_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../nanopb/*.c)
+
+file(GLOB_RECURSE MESSAGE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../generated/messages/**/*.c)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/mocks)
-add_executable(${This} ${TEST_SOURCES})
+add_executable(${This} ${TEST_SOURCES} ${NANOPB_SOURCES} ${MESSAGE_SOURCES})
 #target_compile_options(${This} PUBLIC -pedantic -pedantic-errors)
 # Link the executable with the GoogleTest libraries
 target_link_libraries(${This} PUBLIC gtest gtest_main gmock MAIN_SOURCES)

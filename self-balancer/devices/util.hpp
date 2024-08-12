@@ -28,4 +28,7 @@ inline uint64_t swap_endianness(uint64_t value) {
            ((value << 56) & 0xFF00000000000000);
 }
 
+// add an IGNORE macro to ignore a variable
+#define IGNORE(x) (void)(x)
+
 #endif // UTIL_HPP

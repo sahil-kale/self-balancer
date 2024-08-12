@@ -24,6 +24,12 @@ class HAL_Motor : public BaseMotor {
      */
     float getCurrent() override;
 
+    /**
+     * @brief Get the duty cycle of the motor (-1.0 to 1.0)
+     * @note: -1.0 is full reverse, 1.0 is full forward. Direction is determined by the motor.
+     */
+    float getDutyCycle() override;
+
     private:
     float voltageConversionFactor;
     float currentConversionFactor;
@@ -33,6 +39,8 @@ class HAL_Motor : public BaseMotor {
     const char* TAG;
     adc_oneshot_unit_handle_t* adcHandle;
     adc_channel_t adcChannel;
+
+    float dutyCycle_;
 };
 
 #endif // HAL_MOTOR_HPP

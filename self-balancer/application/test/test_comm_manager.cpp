@@ -57,4 +57,16 @@ TEST(CommManagerTest, QueueAndSendMessage)
     EXPECT_THAT(sentBuffer, ElementsAreArray(expectedBuffer));
 }
 
+#if 0
 // Test receive behaviour - expect a poll to the receive method of the transport layer, and the comm manager API for command processes corretly
+TEST(CommManagerTest, ReceiveAndVerifyCommandApiWorks)
+{
+    TransportLayerMock transportLayerMock;
+    MessageQueueMock messageQueueMock;
+
+    CommManager commManager(transportLayerMock, messageQueueMock);
+
+    // Expect a transport layer receive call, with the following message seralized:
+
+}
+#endif
