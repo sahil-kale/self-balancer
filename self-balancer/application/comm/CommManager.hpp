@@ -2,7 +2,7 @@
 #define COMM_MANAGER_HPP
 #include "TransportLayer.hpp"
 #include "MessageQueue.hpp"
-#define MAX_DATAGRAM_BUF_SIZE (512)
+#define MAX_DATAGRAM_BUF_SIZE (QUEUE_STORAGE_SIZE_BYTES)
 
 class CommManager {
     public:
