@@ -1,6 +1,3 @@
-// A very simple protocol definition, consisting of only
-// one message.
-
 syntax = "proto2";
 
 message GyroMeasurements {
@@ -13,5 +10,10 @@ message AccelMeasurements {
     required float x_m_per_s_squared = 1;
     required float y_m_per_s_squared = 2;
     required float z_m_per_s_squared = 3;
+}
+
+message ImuTelem {
+    required GyroMeasurements Gyro = 1;
+    required AccelMeasurements Accel = 2;
 }
 

@@ -11,8 +11,16 @@ class BaseMotor {
 
     /**
      * @brief Get the current of the motor in Amps
+     * @return float
      */
     virtual float getCurrent() = 0;
+
+    /**
+     * @brief Get the duty cycle of the motor (-1.0 to 1.0)
+     * @note: -1.0 is full reverse, 1.0 is full forward. Direction is determined by the motor.
+     * @return float 
+     */
+    virtual float getDutyCycle() = 0;
 };
 
 #endif // MOTOR_HPP

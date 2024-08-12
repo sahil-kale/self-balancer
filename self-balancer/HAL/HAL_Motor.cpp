@@ -64,6 +64,7 @@ void HAL_Motor::init(mcpwm_timer_handle_t timer, uint8_t pwmGpioNum, float dutyC
 void HAL_Motor::setDutyCycle(float dutyCycle) {
     const uint32_t ticks = (uint32_t)(dutyCycle * dutyCycleToTicksConversion);
     ESP_ERROR_CHECK(mcpwm_comparator_set_compare_value(comparatorHandle, ticks));
+    this->dutyCycle_ = dutyCycle;
 }
 
 float HAL_Motor::getCurrent() {
@@ -73,4 +74,8 @@ float HAL_Motor::getCurrent() {
     const float voltage = dout * voltageConversionFactor;
     current = voltage * currentConversionFactor;
     return current;
+}
+
+float HAL_Motor::getDutyCycle() {
+    return dutyCycle_;
 }

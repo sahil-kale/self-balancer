@@ -19,6 +19,7 @@ void CommManager::run()
     MessageQueue::Message message;
     while (messageQueue.receive(message))
     {
+        // todo: make a message serializer rather than doing this here
         datagramBuffer[bytesPopulated] = static_cast<uint8_t>(message.channel);
         bytesPopulated += 1;
 

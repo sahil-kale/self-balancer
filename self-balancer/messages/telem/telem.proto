@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+message MotorData {
+    required float current = 1;
+    required float dutyCycle = 2;
+}
+
