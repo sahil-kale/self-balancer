@@ -28,5 +28,5 @@ if __name__ == '__main__':
         # receive a message from the server
         data, addr = sock.recvfrom(1024)
         # print the message alongside a timestamp accurate to us
-        print(f"Timestamp: {time.time()} | Received message from server: {data.decode()}")
+        print(f"Timestamp: {time.time()} | Received message from server: {data}")
 

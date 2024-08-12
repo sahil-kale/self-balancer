@@ -11,8 +11,12 @@
 #include "esp_adc/adc_oneshot.h"
 
 #include "HAL_Wifi.hpp"
-
+#include "HAL_time.hpp"
 #include "HAL_messageQueue.hpp"
+
+#include "CommManager.hpp"
+#include "imu_telem.hpp"
+#include "motor_telem.hpp"
 
 #define IMU_SPI_HOST SPI3_HOST
 #define SPI1_PIN_NUM_MISO 13
@@ -46,6 +50,45 @@ static  mcpwm_timer_config_t timer_config = {
 
 static const char* TAG = "APP"; 
 
+static uint8_t ucQueueStorage[ MAX_MESSAGE_BUF_BYTES * MAX_MESSAGE_QUEUE_SIZE ];
+
+static HAL_LSM6DS3 imu;
+static HAL_Motor leftMotor("leftMotor");
+static HAL_Motor rightMotor("rightMotor");
+static HAL_Wifi wifi;
+HAL_MessageQueue messageQueue(ucQueueStorage);
+HAL_TimeServer timeServer;
+
+static CommManager commManager(wifi, messageQueue);
+static IMUTelem imuTelem(messageQueue, imu, timeServer);
+static MotorTelem leftMotorTelem(messageQueue, leftMotor, timeServer);
+static MotorTelem rightMotorTelem(messageQueue, rightMotor, timeServer);
+
+void task_1ms(void* pvParameters)
+{
+    while(true)
+    {
+        imu.poll();
+        leftMotor.setDutyCycle(0.6);
+        rightMotor.setDutyCycle(0.6);
+        
+        imuTelem.run();
+        leftMotorTelem.run();
+        rightMotorTelem.run();
+        vTaskDelay(1 / portTICK_PERIOD_MS);
+    }
+}
+
+void task_100ms(void* pvParameters)
+{
+    while(true)
+    {
+        commManager.run();
+        wifi.run();
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+}
+
 void app_run() {
      // init shared timer object for motors
     ESP_ERROR_CHECK(mcpwm_new_timer(&timer_config, &timer));
@@ -70,10 +113,6 @@ void app_run() {
     gpio_set_level((gpio_num_t)MOTOR_SLEEP_GPIO, 1);
     
 
-    HAL_LSM6DS3 imu;
-    HAL_Motor leftMotor("leftMotor");
-    HAL_Motor rightMotor("rightMotor");
-
     imu.init(SPI3_HOST, SPI1_PIN_NUM_MISO, SPI1_PIN_NUM_MOSI, SPI1_PIN_NUM_CLK, SPI1_PIN_NUM_CS);
 
     // Initialize the motors
@@ -85,24 +124,14 @@ void app_run() {
     ESP_ERROR_CHECK(mcpwm_timer_enable(timer));
     ESP_ERROR_CHECK(mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP));
 
-    // Initialize the wifi
-    HAL_Wifi wifi;
     wifi.init();
 
-    HAL_MessageQueue messageQueue;
+    // Create the tasks pinned to core 0
+    xTaskCreatePinnedToCore(task_1ms, "task_1ms", 4096, NULL, 3, NULL, 1);
 
-    while(true)
-    {
-        imu.poll();
-        leftMotor.setDutyCycle(0.6);
-        leftMotor.getCurrent();
-        rightMotor.setDutyCycle(0.6);
-        rightMotor.getCurrent();
-        // send a udp packet with the message "hello world"
-        char message[] = "hello world";
-        wifi.send((uint8_t*)message, sizeof(message));
-        wifi.run();
-        vTaskDelay(pdMS_TO_TICKS(100));  // Delay to print once per tick
-    }
+    // Create the tasks pinned to core 1
+    xTaskCreatePinnedToCore(task_100ms, "task_100ms", 4096, NULL, 2, NULL, 1);
+
+    vTaskDelete(NULL);
 
 }

@@ -5,11 +5,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
-#define MAX_MESSAGE_QUEUE_SIZE 30
+#define MAX_MESSAGE_QUEUE_SIZE 200
 
 class HAL_MessageQueue : public MessageQueue {
     public:
-    HAL_MessageQueue();
+    HAL_MessageQueue(uint8_t ucQueueStorage[MAX_MESSAGE_QUEUE_SIZE * MAX_MESSAGE_BUF_BYTES]);
     ~HAL_MessageQueue();
 
     bool send(const Message& message) override;
@@ -18,7 +18,7 @@ class HAL_MessageQueue : public MessageQueue {
     private:
     StaticQueue_t xStaticQueue;
     QueueHandle_t xQueue;
-    uint8_t ucQueueStorage[ MAX_MESSAGE_BUF_BYTES * MAX_MESSAGE_QUEUE_SIZE ];
+    uint8_t* ucQueueStorage = nullptr;
 };
 
 
