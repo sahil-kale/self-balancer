@@ -12,6 +12,8 @@
 
 #include "HAL_Wifi.hpp"
 
+#include "HAL_messageQueue.hpp"
+
 #define IMU_SPI_HOST SPI3_HOST
 #define SPI1_PIN_NUM_MISO 13
 #define SPI1_PIN_NUM_MOSI 11
@@ -87,6 +89,7 @@ void app_run() {
     HAL_Wifi wifi;
     wifi.init();
 
+    HAL_MessageQueue messageQueue;
 
     while(true)
     {
