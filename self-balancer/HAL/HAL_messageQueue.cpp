@@ -1,7 +1,9 @@
 #include "HAL_messageQueue.hpp"
 #include "util.hpp"
+#include "esp_log.h"
 
-HAL_MessageQueue::HAL_MessageQueue()
+HAL_MessageQueue::HAL_MessageQueue(uint8_t ucQueueStorage[MAX_MESSAGE_QUEUE_SIZE * MAX_MESSAGE_BUF_BYTES])
+    : ucQueueStorage(ucQueueStorage)
 {
     // Create the queue
     this->xQueue = xQueueCreateStatic(MAX_MESSAGE_QUEUE_SIZE, MAX_MESSAGE_BUF_BYTES, this->ucQueueStorage, &this->xStaticQueue);
@@ -15,7 +17,6 @@ HAL_MessageQueue::~HAL_MessageQueue()
 
 bool HAL_MessageQueue::send(const Message& message)
 {
-    // Send the message
     return xQueueSend(this->xQueue, &message, (TickType_t)0U) == pdPASS;
 }
 
