@@ -2,11 +2,11 @@
 #include "util.hpp"
 #include "esp_log.h"
 
-HAL_MessageQueue::HAL_MessageQueue(uint8_t ucQueueStorage[MAX_MESSAGE_QUEUE_SIZE * MAX_MESSAGE_BUF_BYTES])
+HAL_MessageQueue::HAL_MessageQueue(uint8_t ucQueueStorage[QUEUE_STORAGE_SIZE_BYTES])
     : ucQueueStorage(ucQueueStorage)
 {
     // Create the queue
-    this->xQueue = xQueueCreateStatic(MAX_MESSAGE_QUEUE_SIZE, MAX_MESSAGE_BUF_BYTES, this->ucQueueStorage, &this->xStaticQueue);
+    this->xQueue = xQueueCreateStatic(MAX_MESSAGE_QUEUE_SIZE, BYTES_PER_QUEUE_ITEM, this->ucQueueStorage, &this->xStaticQueue);
     configASSERT(this->xQueue);
 }
 

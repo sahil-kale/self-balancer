@@ -50,7 +50,7 @@ static  mcpwm_timer_config_t timer_config = {
 
 static const char* TAG = "APP"; 
 
-static uint8_t ucQueueStorage[ MAX_MESSAGE_BUF_BYTES * MAX_MESSAGE_QUEUE_SIZE ];
+static uint8_t ucQueueStorage[QUEUE_STORAGE_SIZE_BYTES];
 
 static HAL_LSM6DS3 imu;
 static HAL_Motor leftMotor("leftMotor");
@@ -127,7 +127,7 @@ void app_run() {
     wifi.init();
 
     // Create the tasks pinned to core 0
-    xTaskCreatePinnedToCore(task_1ms, "task_1ms", 4096, NULL, 3, NULL, 1);
+    xTaskCreatePinnedToCore(task_1ms, "task_1ms", 4096, NULL, 3, NULL, 0);
 
     // Create the tasks pinned to core 1
     xTaskCreatePinnedToCore(task_100ms, "task_100ms", 4096, NULL, 2, NULL, 1);

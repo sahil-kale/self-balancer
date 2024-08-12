@@ -35,4 +35,6 @@ void CommManager::run()
     {
         transportLayer.send(datagramBuffer, bytesPopulated);
     }
+
+    bytesPopulated = 0U;
 }
