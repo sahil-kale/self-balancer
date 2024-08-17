@@ -2,6 +2,9 @@
 #include <string.h>
 #include "util.hpp"
 
+#include <pb_encode.h>
+#include <pb_decode.h>
+#include "messages/header/header.pb.h"
 
 CommManager::CommManager(TransportLayer& transportLayer, MessageQueue& messageQueue)
     : transportLayer(transportLayer), messageQueue(messageQueue)
@@ -19,13 +22,17 @@ void CommManager::run()
     MessageQueue::Message message;
     while (messageQueue.receive(message))
     {
-        // todo: make a message serializer rather than doing this here
-        datagramBuffer[bytesPopulated] = static_cast<uint8_t>(message.channel);
-        bytesPopulated += 1;
+        MessageHeader header;
+        header.channel = static_cast<uint32_t>(message.channel);
+        header.timestamp = static_cast<uint32_t>(message.timestamp);
+        header.length = static_cast<uint32_t>(message.length);
 
-        utime_t timestamp_swapped = static_cast<utime_t>(swap_endianness(message.timestamp));
-        memcpy(&datagramBuffer[bytesPopulated], &timestamp_swapped, sizeof(utime_t));
-        bytesPopulated += sizeof(utime_t);
+        uint8_t headerBuffer[MessageHeader_size] = {0};
+        pb_ostream_t headerStream = pb_ostream_from_buffer(headerBuffer, sizeof(headerBuffer));
+        pb_encode(&headerStream, MessageHeader_fields, &header);
+
+        memcpy(&datagramBuffer[bytesPopulated], headerBuffer, sizeof(headerBuffer));
+        bytesPopulated += sizeof(headerBuffer);
 
         memcpy(&datagramBuffer[bytesPopulated], message.buffer, message.length);
         bytesPopulated += message.length;

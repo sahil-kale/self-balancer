@@ -19,4 +19,8 @@ if __name__ == '__main__':
     output_dir = "generated"
     # make the output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
+    # make the __init__.py file in the output directory
+    with open(f"{output_dir}/__init__.py", "w") as f:
+        f.write("")
+
     main(message_directory, nanopb_generator_path, output_dir=output_dir)
