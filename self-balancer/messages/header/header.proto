@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+message MessageHeader {
+    required uint32 channel = 1;
+    required uint64 timestamp = 2;
+    required uint32 length = 3;
+}
+

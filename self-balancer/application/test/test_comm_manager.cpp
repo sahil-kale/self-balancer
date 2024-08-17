@@ -5,6 +5,10 @@
 #include "MessageQueueMock.hpp"
 #include "CommManager.hpp"
 
+#include <pb_encode.h>
+#include <pb_decode.h>
+#include "messages/header/header.pb.h"
+
 using namespace ::testing;
 
 TEST(ExampleTest, Example) {
@@ -29,6 +33,17 @@ TEST(CommManagerTest, QueueAndSendMessage)
     message.buffer[2] = 0x03;
     message.buffer[3] = 0x04;
 
+    // Create header for first message
+    MessageHeader header;
+    header.channel = (uint32_t)MessageChannel::IMU_TELEM;
+    header.timestamp = 2;
+    header.length = 4;
+
+    // seralize the header
+    uint8_t headerBuffer[MessageHeader_size] = {0};
+    pb_ostream_t headerStream = pb_ostream_from_buffer(headerBuffer, sizeof(headerBuffer));
+    pb_encode(&headerStream, MessageHeader_fields, &header);
+
     MessageQueue::Message message2;
     message2.channel = MessageChannel::MOTOR_TELEM;
     message2.timestamp = 0;
@@ -36,13 +51,32 @@ TEST(CommManagerTest, QueueAndSendMessage)
     message2.buffer[0] = 0x05;
     message2.buffer[1] = 0x06;
 
+    // Create header for second message
+    MessageHeader header2;
+    header2.channel = (uint32_t)MessageChannel::MOTOR_TELEM;
+    header2.timestamp = 0;
+    header2.length = 2;
+
+    // seralize the header
+    uint8_t headerBuffer2[MessageHeader_size] = {0};
+    pb_ostream_t headerStream2 = pb_ostream_from_buffer(headerBuffer2, sizeof(headerBuffer2));
+    pb_encode(&headerStream2, MessageHeader_fields, &header2);
+
     EXPECT_CALL(messageQueueMock, receive(_))
     .WillOnce(DoAll(SetArgReferee<0>(message), Return(true)))
     .WillOnce(DoAll(SetArgReferee<0>(message2), Return(true)))
     .WillRepeatedly(Return(false));
 
     // Expect a transport layer send call, with the following buffer:
-    uint8_t expectedBuffer[] = {static_cast<uint8_t>(message.channel), 0, 0, 0, 0, 0, 0, 0, 2, 1, 2, 3, 4, static_cast<uint8_t>(message2.channel), 0, 0, 0, 0, 0, 0, 0, 0, 5, 6};
+    
+
+    // Create expected buffer
+    uint8_t expectedBuffer[MessageHeader_size + 4 + MessageHeader_size + 2];
+    memcpy(expectedBuffer, headerBuffer, MessageHeader_size);
+    memcpy(expectedBuffer + MessageHeader_size, message.buffer, 4);
+    memcpy(expectedBuffer + MessageHeader_size + 4, headerBuffer2, MessageHeader_size);
+    memcpy(expectedBuffer + MessageHeader_size + 4 + MessageHeader_size, message2.buffer, 2);
+
     std::vector<uint8_t> sentBuffer;
     // Expect a transport layer send call with a buffer that matches the defined buffer
     EXPECT_CALL(transportLayerMock, send(_, sizeof(expectedBuffer)))
