@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     while True:
         # receive a message from the server
-        data, addr = sock.recvfrom(1024)
+        data, addr = sock.recvfrom(4096)
         # print the message alongside a timestamp accurate to us
         print(f"Timestamp: {time.time()} | Received message from server: {data}")
 

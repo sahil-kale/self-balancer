@@ -199,10 +199,13 @@ bool HAL_Wifi::send(const uint8_t* buffer, size_t length) {
         ESP_LOGE(TAG, "Client not connected");
         return false;
     }
+
     int err = sendto(sock, buffer, length, 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
     if (err < 0) {
         ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
     }
+
+    ESP_LOGI(TAG, "Sent %d bytes", err);
 
     return true;
 }

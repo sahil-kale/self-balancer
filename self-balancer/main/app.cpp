@@ -59,6 +59,12 @@ static HAL_Wifi wifi;
 HAL_MessageQueue messageQueue(ucQueueStorage);
 HAL_TimeServer timeServer;
 
+// adc
+static adc_oneshot_unit_handle_t adc1_handle;
+static adc_oneshot_unit_init_cfg_t init_config1 = {
+    .unit_id = ADC_UNIT_1, // just assume
+};
+
 static CommManager commManager(wifi, messageQueue);
 static IMUTelem imuTelem(messageQueue, imu, timeServer);
 static MotorTelem leftMotorTelem(messageQueue, leftMotor, timeServer);
@@ -92,12 +98,6 @@ void task_100ms(void* pvParameters)
 void app_run() {
      // init shared timer object for motors
     ESP_ERROR_CHECK(mcpwm_new_timer(&timer_config, &timer));
-
-    // adc
-    adc_oneshot_unit_handle_t adc1_handle;
-    adc_oneshot_unit_init_cfg_t init_config1 = {
-        .unit_id = ADC_UNIT_1, // just assume
-    };
     ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 
     // Pull up the sleep GPIO
