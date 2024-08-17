@@ -27,6 +27,13 @@ void CommManager::run()
         header.timestamp = static_cast<uint32_t>(message.timestamp);
         header.length = static_cast<uint32_t>(message.length);
 
+        const size_t size_to_write = MessageHeader_size + message.length;
+        if (bytesPopulated + size_to_write > MAX_DATAGRAM_BUF_SIZE)
+        {
+            transportLayer.send(datagramBuffer, bytesPopulated);
+            bytesPopulated = 0U;
+        }
+
         uint8_t headerBuffer[MessageHeader_size] = {0};
         pb_ostream_t headerStream = pb_ostream_from_buffer(headerBuffer, sizeof(headerBuffer));
         pb_encode(&headerStream, MessageHeader_fields, &header);

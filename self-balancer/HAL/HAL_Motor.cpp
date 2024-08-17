@@ -70,6 +70,13 @@ void HAL_Motor::setDutyCycle(float dutyCycle) {
 float HAL_Motor::getCurrent() {
     // Read the current of the motor
     int dout;
+
+    // double check the adc handle is not null
+    if (adcHandle == NULL) {
+        ESP_LOGE(TAG, "ADC handle is null");
+        return 0.0f;
+    }
+
     ESP_ERROR_CHECK(adc_oneshot_read(*adcHandle, adcChannel, &dout));
     const float voltage = dout * voltageConversionFactor;
     current = voltage * currentConversionFactor;
