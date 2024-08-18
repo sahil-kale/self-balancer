@@ -49,9 +49,9 @@ TEST(MotorTelemTest, VerifymotorMessageConstruction) {
     motorTelem.run();
 
     // Verify the message is the same as the expected message
-    EXPECT_EQ(message.channel, MessageChannel::MOTOR_TELEM);
-    EXPECT_EQ(message.timestamp, testTimestamp);
-    EXPECT_EQ(message.length, sizeof(buffer));
+    EXPECT_EQ(message.header.channel, MessageChannels_MOTOR_TELEM);
+    EXPECT_EQ(message.header.timestamp, testTimestamp);
+    EXPECT_EQ(message.header.length, sizeof(buffer));
     // Expect that the buffers are equal up to the length of the buffer
-    EXPECT_THAT(std::vector<uint8_t>(message.buffer, message.buffer + message.length), ElementsAreArray(buffer));
+    EXPECT_THAT(std::vector<uint8_t>(message.buffer, message.buffer + message.header.length), ElementsAreArray(buffer));
 }

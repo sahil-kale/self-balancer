@@ -22,12 +22,7 @@ void CommManager::run()
     MessageQueue::Message message;
     while (messageQueue.receive(message))
     {
-        MessageHeader header;
-        header.channel = static_cast<uint32_t>(message.channel);
-        header.timestamp = static_cast<uint32_t>(message.timestamp);
-        header.length = static_cast<uint32_t>(message.length);
-
-        const size_t size_to_write = MessageHeader_size + message.length;
+        const size_t size_to_write = MessageHeader_size + message.header.length;
         if (bytesPopulated + size_to_write > MAX_DATAGRAM_BUF_SIZE)
         {
             transportLayer.send(datagramBuffer, bytesPopulated);
@@ -36,13 +31,13 @@ void CommManager::run()
 
         uint8_t headerBuffer[MessageHeader_size] = {0};
         pb_ostream_t headerStream = pb_ostream_from_buffer(headerBuffer, sizeof(headerBuffer));
-        pb_encode(&headerStream, MessageHeader_fields, &header);
+        pb_encode(&headerStream, MessageHeader_fields, &message.header);
 
         memcpy(&datagramBuffer[bytesPopulated], headerBuffer, sizeof(headerBuffer));
         bytesPopulated += sizeof(headerBuffer);
 
-        memcpy(&datagramBuffer[bytesPopulated], message.buffer, message.length);
-        bytesPopulated += message.length;
+        memcpy(&datagramBuffer[bytesPopulated], message.buffer, message.header.length);
+        bytesPopulated += message.header.length;
     }
 
     if (bytesPopulated > 0)
