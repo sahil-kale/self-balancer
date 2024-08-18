@@ -12,6 +12,11 @@ from enum import Enum
 from generated.messages.header import header_pb2
 
 def extract_header_contents(data):
-    header = header_pb2.Header()
+    header = header_pb2.MessageHeader()
+    testHeader = header_pb2.MessageHeader()
+    testHeader.channel = 1
+    testHeader.timestamp = 2
+    testHeader.length = 1234
+    breakpoint()
     header.ParseFromString(data)
     return header

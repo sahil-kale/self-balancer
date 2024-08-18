@@ -3,6 +3,7 @@
 #include <string.h>
 #include <pb_encode.h>
 #include "messages/imu/imu.pb.h"
+#include "messages/header/header.pb.h"
 
 IMUTelem::IMUTelem(MessageQueue& messageQueue, BaseIMU& imu, TimeServer& timeServer) : messageQueue_(messageQueue), imu_(imu), timeServer_(timeServer) {}
 
@@ -27,9 +28,9 @@ void IMUTelem::run() {
 
     // Send the message to the message queue
     MessageQueue::Message message;
-    message.channel = MessageChannel::IMU_TELEM;
-    message.timestamp = timeServer_.getUtimeUs();
-    message.length = sizeof(buffer);
+    message.header.channel = MessageChannels_IMU_TELEM;
+    message.header.timestamp = timeServer_.getUtimeUs();
+    message.header.length = sizeof(buffer);
     memcpy(message.buffer, buffer, sizeof(buffer));
     messageQueue_.send(message);
 }

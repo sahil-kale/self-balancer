@@ -1,7 +1,12 @@
 syntax = "proto2";
 
+enum MessageChannels {
+    IMU_TELEM = 0;
+    MOTOR_TELEM = 1;
+}
+
 message MessageHeader {
-    required uint32 channel = 1;
+    required MessageChannels channel = 1;
     required uint64 timestamp = 2;
     required uint32 length = 3;
 }

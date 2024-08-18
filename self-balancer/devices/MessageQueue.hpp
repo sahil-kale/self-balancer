@@ -2,8 +2,8 @@
 #define MESSAGE_QUEUE_HPP
 #include <stdint.h>
 #include <stddef.h>
-#include "channels.hpp"
 #include "time.hpp"
+#include "messages/header/header.pb.h"
 
 #define MAX_MESSAGE_BUF_BYTES 64
 #define MAX_MESSAGE_QUEUE_SIZE 50
@@ -13,9 +13,7 @@
 class MessageQueue {
     public:
     typedef struct {
-        MessageChannel channel;
-        utime_t timestamp;
-        size_t length;
+        MessageHeader header;
         uint8_t buffer[MAX_MESSAGE_BUF_BYTES];
     } Message;
 

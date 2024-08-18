@@ -24,43 +24,30 @@ TEST(CommManagerTest, QueueAndSendMessage)
 
     // Make a dummy message for IMU_TELEM
     MessageQueue::Message message;
-    message.channel = MessageChannel::IMU_TELEM;
-    message.timestamp = 2;
-    // Set the buffer to some dummy data
-    message.length = 4;
+    message.header.channel = MessageChannels_IMU_TELEM;
+    message.header.timestamp = 0;
+    message.header.length = 4;
     message.buffer[0] = 0x01;
     message.buffer[1] = 0x02;
     message.buffer[2] = 0x03;
     message.buffer[3] = 0x04;
 
-    // Create header for first message
-    MessageHeader header;
-    header.channel = (uint32_t)MessageChannel::IMU_TELEM;
-    header.timestamp = 2;
-    header.length = 4;
-
     // seralize the header
     uint8_t headerBuffer[MessageHeader_size] = {0};
     pb_ostream_t headerStream = pb_ostream_from_buffer(headerBuffer, sizeof(headerBuffer));
-    pb_encode(&headerStream, MessageHeader_fields, &header);
+    pb_encode(&headerStream, MessageHeader_fields, &message.header);
 
     MessageQueue::Message message2;
-    message2.channel = MessageChannel::MOTOR_TELEM;
-    message2.timestamp = 0;
-    message2.length = 2;
+    message2.header.channel = MessageChannels_MOTOR_TELEM;
+    message2.header.timestamp = 0;
+    message2.header.length = 2;
     message2.buffer[0] = 0x05;
     message2.buffer[1] = 0x06;
-
-    // Create header for second message
-    MessageHeader header2;
-    header2.channel = (uint32_t)MessageChannel::MOTOR_TELEM;
-    header2.timestamp = 0;
-    header2.length = 2;
 
     // seralize the header
     uint8_t headerBuffer2[MessageHeader_size] = {0};
     pb_ostream_t headerStream2 = pb_ostream_from_buffer(headerBuffer2, sizeof(headerBuffer2));
-    pb_encode(&headerStream2, MessageHeader_fields, &header2);
+    pb_encode(&headerStream2, MessageHeader_fields, &message2.header);
 
     EXPECT_CALL(messageQueueMock, receive(_))
     .WillOnce(DoAll(SetArgReferee<0>(message), Return(true)))

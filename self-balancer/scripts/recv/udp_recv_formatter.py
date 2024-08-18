@@ -3,17 +3,18 @@ import argparse
 import time
 from channels import *
 import struct
+from processing_utils import *
 
 DEFAULT_SERVER_IP = "10.0.0.203"
 DEFAULT_SERVER_PORT = 5007
 
 def process_message(data):
-    # python struct formatter: 1 byte channel, 8 bytes timestamp (big endian)
-    channel, timestamp = struct.unpack(">BQ", data[:9])
-    # Extract the length of the message
-    msg_len = struct.unpack(">H", data[9:11])[0]
-    # Extract the message
-    msg = data[11:11+msg_len]
+    header = extract_header_contents(data)
+    print(f"Received message with header: {header}")
+    message_type = MessageChannel(header.message_type)
+    message = message_mapping[message_type]()
+    message.ParseFromString(data[header.ByteSize():])
+    print(f"Received message of type {message_type} with contents: {message}")
     breakpoint()
 
 
@@ -41,6 +42,5 @@ if __name__ == '__main__':
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     sock.sendto(b"Connected by UDP", (SERVER_IP, SERVER_PORT))
-    generate_message_sizes()
     main(sock)
 
