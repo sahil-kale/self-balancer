@@ -18,3 +18,9 @@ def extract_header_contents(data):
     header = header_pb2.MessageHeader()
     header.ParseFromString(data[:HEADER_SIZE_BYTES])
     return header
+
+
+def get_header_and_message(data):
+    header = extract_header_contents(data)
+    message = data[HEADER_SIZE_BYTES : HEADER_SIZE_BYTES + header.length]
+    return header, message
