@@ -17,7 +17,12 @@ HAL_MessageQueue::~HAL_MessageQueue()
 
 bool HAL_MessageQueue::send(const Message& message)
 {
-    return xQueueSend(this->xQueue, &message, (TickType_t)0U) == pdPASS;
+    const bool success = xQueueSend(this->xQueue, &message, (TickType_t)0U) == pdPASS;
+    if (!success)
+    {
+        ESP_LOGE("HAL_MessageQueue", "Failed to send message");
+    }
+    return success;
 }
 
 bool HAL_MessageQueue::receive(Message& message)
