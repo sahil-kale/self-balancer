@@ -6,7 +6,7 @@
 #include "messages/header/header.pb.h"
 
 #define MAX_MESSAGE_BUF_BYTES 64
-#define MAX_MESSAGE_QUEUE_SIZE 50
+#define MAX_MESSAGE_QUEUE_SIZE 200
 #define BYTES_PER_QUEUE_ITEM (sizeof(MessageQueue::Message))
 #define QUEUE_STORAGE_SIZE_BYTES (MAX_MESSAGE_QUEUE_SIZE * BYTES_PER_QUEUE_ITEM)
 

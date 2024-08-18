@@ -24,8 +24,7 @@ def process_messages(data):
         
         message.ParseFromString(data[HEADER_SIZE_BYTES:HEADER_SIZE_BYTES + header.length])
 
-        if header.channel == header_pb2.MessageChannels.IMU_TELEM:
-            print(f"Received message of type {header.channel} at timestamp {header.timestamp} with contents: {message}")
+        print(f"Received message of type {header.channel} at timestamp {header.timestamp} with contents: {message}")
         data = data[HEADER_SIZE_BYTES + header.length:]
     
     print("======Done processing messages==========")

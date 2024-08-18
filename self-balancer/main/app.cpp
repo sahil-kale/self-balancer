@@ -101,13 +101,13 @@ void task_1ms(void* pvParameters)
     }
 }
 
-void task_100ms(void* pvParameters)
+void task_50ms(void* pvParameters)
 {
     while(true)
     {
         commManager.run();
         wifi.run();
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
     }
 }
 
@@ -149,11 +149,9 @@ void app_run() {
     ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
 
-    // Create the tasks pinned to core 0
-    xTaskCreatePinnedToCore(task_1ms, "task_1ms", 4096, NULL, 5, NULL, 0);
+    xTaskCreatePinnedToCore(task_1ms, "task_1ms", 4096, NULL, 5, NULL, 1);
 
-    // Create the tasks pinned to core 1
-    xTaskCreatePinnedToCore(task_100ms, "task_100ms", 4096, NULL, 2, NULL, 1);
+    xTaskCreatePinnedToCore(task_50ms, "task_50ms", 4096, NULL, 2, NULL, 1);
 
     vTaskDelete(NULL);
 
