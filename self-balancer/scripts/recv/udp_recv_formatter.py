@@ -16,7 +16,9 @@ def process_messages(data):
         header = extract_header_contents(data)
         if header.channel == header_pb2.MessageChannels.IMU_TELEM:
             message = imu_pb2.ImuTelem()
-        elif header.channel == header_pb2.MessageChannels.MOTOR_TELEM:
+        elif header.channel == header_pb2.MessageChannels.MOTOR_L_TELEM:
+            message = telem_pb2.MotorData()
+        elif header.channel == header_pb2.MessageChannels.MOTOR_R_TELEM:
             message = telem_pb2.MotorData()
         else:
             print(f"Unknown message type: {header.channel}")
@@ -33,7 +35,7 @@ def process_messages(data):
 def main(socket):
     while True:
         # receive a message from the server
-        data, addr = sock.recvfrom(1024)
+        data, addr = sock.recvfrom(65535)
         #print(f"Timestamp: {time.time()} | Received message from server: {data}")
         process_messages(data)
 

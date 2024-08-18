@@ -4,7 +4,8 @@
 #include "messages/telem/telem.pb.h"
 #include "messages/header/header.pb.h"
 
-MotorTelem::MotorTelem(MessageQueue& messageQueue, BaseMotor& motor, TimeServer& timeServer) : messageQueue_(messageQueue), motor_(motor), timeServer_(timeServer) {}
+MotorTelem::MotorTelem(MessageQueue& messageQueue, BaseMotor& motor, TimeServer& timeServer, MessageChannels channel) : messageQueue_(messageQueue), motor_(motor), timeServer_(timeServer), channel_(channel)
+ {}
 
 void MotorTelem::run()
 {
@@ -24,7 +25,7 @@ void MotorTelem::run()
 
     // Send the message
     MessageQueue::Message message;
-    message.header.channel = MessageChannels_MOTOR_TELEM;
+    message.header.channel = this->channel_;
     message.header.timestamp = timeServer_.getUtimeUs();
     message.header.length = (uint32_t)stream.bytes_written;
     memcpy(message.buffer, buffer, message.header.length);
