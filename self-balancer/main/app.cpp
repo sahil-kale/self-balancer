@@ -9,6 +9,7 @@
 #include "esp_log.h"
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
+#include "esp_timer.h"
 
 #include "HAL_Wifi.hpp"
 #include "HAL_time.hpp"
@@ -70,18 +71,33 @@ static IMUTelem imuTelem(messageQueue, imu, timeServer);
 static MotorTelem leftMotorTelem(messageQueue, leftMotor, timeServer);
 static MotorTelem rightMotorTelem(messageQueue, rightMotor, timeServer);
 
+static SemaphoreHandle_t xSemaphore = NULL;
+static StaticSemaphore_t xSemaphoreBuffer;
+
+static void periodic_timer_callback(void* arg);
+
+static esp_timer_handle_t periodic_timer;
+const esp_timer_create_args_t periodic_timer_args = {
+        .callback = &periodic_timer_callback,
+        .dispatch_method = ESP_TIMER_ISR,
+        .name = "1msTimer"
+};
+
+
 void task_1ms(void* pvParameters)
 {
     while(true)
     {
-        imu.poll();
-        leftMotor.setDutyCycle(0.6);
-        rightMotor.setDutyCycle(0.6);
-        
-        imuTelem.run();
-        leftMotorTelem.run();
-        rightMotorTelem.run();
-        vTaskDelay(1 / portTICK_PERIOD_MS);
+        if (xSemaphoreTake(xSemaphore, portMAX_DELAY) == pdTRUE)
+        {
+            imu.poll();
+            leftMotor.setDutyCycle(0.6);
+            rightMotor.setDutyCycle(0.6);
+            
+            imuTelem.run();
+            leftMotorTelem.run();
+            rightMotorTelem.run();
+        }
     }
 }
 
@@ -126,12 +142,26 @@ void app_run() {
 
     wifi.init();
 
+    // Init 1ms semaphore and logic
+    xSemaphore = xSemaphoreCreateBinaryStatic( &xSemaphoreBuffer );
+
+
+    ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
+
     // Create the tasks pinned to core 0
-    xTaskCreatePinnedToCore(task_1ms, "task_1ms", 4096, NULL, 3, NULL, 0);
+    xTaskCreatePinnedToCore(task_1ms, "task_1ms", 4096, NULL, 5, NULL, 0);
 
     // Create the tasks pinned to core 1
     xTaskCreatePinnedToCore(task_100ms, "task_100ms", 4096, NULL, 2, NULL, 1);
 
     vTaskDelete(NULL);
 
+}
+
+static void periodic_timer_callback(void* arg)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(xSemaphore, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }

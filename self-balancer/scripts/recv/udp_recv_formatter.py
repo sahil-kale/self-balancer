@@ -27,6 +27,8 @@ def process_messages(data):
         if header.channel == header_pb2.MessageChannels.IMU_TELEM:
             print(f"Received message of type {header.channel} at timestamp {header.timestamp} with contents: {message}")
         data = data[HEADER_SIZE_BYTES + header.length:]
+    
+    print("======Done processing messages==========")
 
 
 def main(socket):
