@@ -2,12 +2,15 @@
 
 /**
  * @file wifi_cmds.c
- * This code taken from: 
+ * This code taken from:
  * https://github.com/sahil-kale/Wireless-Soil-Moisture-Sensor/blob/main/main/src/wifi_cmds.c
  * Originally taken from: UDP Multicast Ping Example
- * 
+ *
  */
 
+#include <lwip/netdb.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "config.h"
 #include "esp_event.h"
@@ -21,26 +24,19 @@
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 
-#include <lwip/netdb.h>
-#include <stdint.h>
-#include <string.h>
-
 #define LISTEN_ALL_IF 1
-#define ADDR_FAMILY   AF_INET
+#define ADDR_FAMILY AF_INET
 
 static const char *TAG = "wifi station";
 
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
-#define WIFI_FAIL_BIT      BIT1
+#define WIFI_FAIL_BIT BIT1
 
 #define MAX_RX_BUFFER 1024
 
-int8_t send_udp_packet(void *buffer, size_t len) {
-
-    return 0;
-}
+int8_t send_udp_packet(void *buffer, size_t len) { return 0; }
 
 void HAL_Wifi::init_udp_server_task() {
     int addr_family = ADDR_FAMILY;
@@ -118,10 +114,8 @@ void HAL_Wifi::init() {
 
     esp_event_handler_instance_t instance_any_id;
     esp_event_handler_instance_t instance_got_ip;
-    ESP_ERROR_CHECK(
-        esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, &instance_any_id));
-    ESP_ERROR_CHECK(
-        esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL, &instance_got_ip));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, &instance_any_id));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL, &instance_got_ip));
 
     wifi_config_t wifi_config = {
         .sta =
@@ -133,9 +127,7 @@ void HAL_Wifi::init() {
                  * not advisable to be used. Incase your Access point doesn't
                  * support WPA2, these mode can be enabled by commenting below
                  * line */
-                .threshold = {
-                    .authmode = WIFI_AUTH_WPA2_PSK
-                },
+                .threshold = {.authmode = WIFI_AUTH_WPA2_PSK},
 
                 .pmf_cfg = {.capable = true, .required = false},
             },
@@ -149,8 +141,8 @@ void HAL_Wifi::init() {
     /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or
      * connection failed for the maximum number of re-tries (WIFI_FAIL_BIT). The
      * bits are set by event_handler() (see above) */
-    EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, pdFALSE, pdFALSE,
-                                           portMAX_DELAY);
+    EventBits_t bits =
+        xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
 
     /* xEventGroupWaitBits() returns the bits before the call returned, hence we
      * can test which event actually happened. */
@@ -176,8 +168,7 @@ void HAL_Wifi::run() {
     uint8_t rx_buffer[MAX_RX_BUFFER] = {0};
     socklen_t socklen = sizeof(source_addr);
     int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
-    if (len > 0)
-    {
+    if (len > 0) {
         char addr_str[128];
         // Get the sender's ip address as string
         if (source_addr.ss_family == PF_INET) {
@@ -186,7 +177,7 @@ void HAL_Wifi::run() {
             inet6_ntoa_r(((struct sockaddr_in6 *)&source_addr)->sin6_addr, addr_str, sizeof(addr_str) - 1);
         }
 
-        rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
+        rx_buffer[len] = 0;  // Null-terminate whatever we received and treat like a string...
         ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
         ESP_LOGI(TAG, "%s", rx_buffer);
 
@@ -194,7 +185,7 @@ void HAL_Wifi::run() {
     }
 }
 
-bool HAL_Wifi::send(const uint8_t* buffer, size_t length) {
+bool HAL_Wifi::send(const uint8_t *buffer, size_t length) {
     if (!client_connected) {
         ESP_LOGE(TAG, "Client not connected");
         return false;
@@ -205,11 +196,9 @@ bool HAL_Wifi::send(const uint8_t* buffer, size_t length) {
         ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
     }
 
-    //ESP_LOGI(TAG, "Sent %d bytes", err);
+    // ESP_LOGI(TAG, "Sent %d bytes", err);
 
     return true;
 }
 
-size_t HAL_Wifi::receive(uint8_t* buffer, size_t length) {
-    return 0;
-}
+size_t HAL_Wifi::receive(uint8_t *buffer, size_t length) { return 0; }

@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 class BaseIMU {
-    public:
+   public:
     typedef struct {
         float x;
         float y;
@@ -25,4 +25,4 @@ class BaseIMU {
     virtual Vector3D getGyro() = 0;
 };
 
-#endif // IMU_HPP
+#endif  // IMU_HPP

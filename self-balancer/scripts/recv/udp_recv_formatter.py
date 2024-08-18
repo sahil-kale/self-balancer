@@ -11,6 +11,7 @@ from generated.messages.telem import telem_pb2
 DEFAULT_SERVER_IP = "10.0.0.203"
 DEFAULT_SERVER_PORT = 5007
 
+
 def process_messages(data):
     while len(data) > HEADER_SIZE_BYTES:
         header = extract_header_contents(data)
@@ -23,12 +24,16 @@ def process_messages(data):
         else:
             print(f"Unknown message type: {header.channel}")
             return
-        
-        message.ParseFromString(data[HEADER_SIZE_BYTES:HEADER_SIZE_BYTES + header.length])
 
-        print(f"Received message of type {header.channel} at timestamp {header.timestamp} with contents: {message}")
-        data = data[HEADER_SIZE_BYTES + header.length:]
-    
+        message.ParseFromString(
+            data[HEADER_SIZE_BYTES : HEADER_SIZE_BYTES + header.length]
+        )
+
+        print(
+            f"Received message of type {header.channel} at timestamp {header.timestamp} with contents: {message}"
+        )
+        data = data[HEADER_SIZE_BYTES + header.length :]
+
     print("======Done processing messages==========")
 
 
@@ -36,11 +41,11 @@ def main(socket):
     while True:
         # receive a message from the server
         data, addr = sock.recvfrom(65535)
-        #print(f"Timestamp: {time.time()} | Received message from server: {data}")
+        # print(f"Timestamp: {time.time()} | Received message from server: {data}")
         process_messages(data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # create args for the server IP and port
     parser = argparse.ArgumentParser()
     parser.add_argument("--server_ip", type=str, default=DEFAULT_SERVER_IP)
@@ -57,4 +62,3 @@ if __name__ == '__main__':
 
     sock.sendto(b"Connected by UDP", (SERVER_IP, SERVER_PORT))
     main(sock)
-

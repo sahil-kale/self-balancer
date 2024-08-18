@@ -5,9 +5,9 @@
 typedef uint64_t utime_t;
 
 class TimeServer {
-public:
+   public:
     // Returns the current time in microseconds
     virtual utime_t getUtimeUs() = 0;
 };
 
-#endif // TIME_HPP
+#endif  // TIME_HPP

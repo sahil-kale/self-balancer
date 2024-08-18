@@ -1,11 +1,14 @@
 #include "imu_telem.hpp"
-#include "util.hpp"
-#include <string.h>
-#include <pb_encode.h>
-#include "messages/imu/imu.pb.h"
-#include "messages/header/header.pb.h"
 
-IMUTelem::IMUTelem(MessageQueue& messageQueue, BaseIMU& imu, TimeServer& timeServer) : messageQueue_(messageQueue), imu_(imu), timeServer_(timeServer) {}
+#include <pb_encode.h>
+#include <string.h>
+
+#include "messages/header/header.pb.h"
+#include "messages/imu/imu.pb.h"
+#include "util.hpp"
+
+IMUTelem::IMUTelem(MessageQueue& messageQueue, BaseIMU& imu, TimeServer& timeServer)
+    : messageQueue_(messageQueue), imu_(imu), timeServer_(timeServer) {}
 
 void IMUTelem::run() {
     // Get the gyro and acceleration measurements from the IMU

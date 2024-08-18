@@ -1,10 +1,10 @@
 #ifndef TRANSPORT_LAYER_HPP
 #define TRANSPORT_LAYER_HPP
+#include <stddef.h>
 #include <stdint.h>
-#include <stddef.h> 
 
 class TransportLayer {
-    public:
+   public:
     /**
      * @brief Send a buffer of data over the transport layer
      * @return True if the send was successful
@@ -18,4 +18,4 @@ class TransportLayer {
     virtual size_t receive(uint8_t* buffer, size_t length) = 0;
 };
 
-#endif // TRANSPORT_LAYER_HPP
+#endif  // TRANSPORT_LAYER_HPP

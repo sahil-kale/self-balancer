@@ -1,13 +1,12 @@
+#include <pb_decode.h>
+#include <pb_encode.h>
+
+#include "IMUMock.hpp"
+#include "MessageQueueMock.hpp"
+#include "TimeServerMock.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
 #include "imu_telem.hpp"
-#include "MessageQueueMock.hpp"
-#include "IMUMock.hpp"
-#include "TimeServerMock.hpp"
-
-#include <pb_encode.h>
-#include <pb_decode.h>
 #include "messages/imu/imu.pb.h"
 
 using namespace ::testing;
@@ -19,10 +18,8 @@ TEST(IMUTelemTest, VerifyImuMessageConstruction) {
     IMUTelem imuTelem(messageQueueMock, imuMock, timeServerMock);
 
     // Expect the IMU to be polled for the gyro and accel measurements
-    EXPECT_CALL(imuMock, getGyro())
-        .WillOnce(Return(BaseIMU::Vector3D{1.0, 2.0, 3.0, 0, true}));
-    EXPECT_CALL(imuMock, getAcceleration())
-        .WillOnce(Return(BaseIMU::Vector3D{4.0, 5.0, 6.0, 0, true}));
+    EXPECT_CALL(imuMock, getGyro()).WillOnce(Return(BaseIMU::Vector3D{1.0, 2.0, 3.0, 0, true}));
+    EXPECT_CALL(imuMock, getAcceleration()).WillOnce(Return(BaseIMU::Vector3D{4.0, 5.0, 6.0, 0, true}));
 
     // Construct the sample message that we should expect to be sent
     ImuTelem imuTelemMessage;
@@ -39,13 +36,11 @@ TEST(IMUTelemTest, VerifyImuMessageConstruction) {
     pb_encode(&stream, ImuTelem_fields, &imuTelemMessage);
 
     MessageQueue::Message message;
-    EXPECT_CALL(messageQueueMock, send(_))
-        .WillRepeatedly(DoAll(SaveArg<0>(&message), Return(true)));
+    EXPECT_CALL(messageQueueMock, send(_)).WillRepeatedly(DoAll(SaveArg<0>(&message), Return(true)));
 
     // Expect a call to the time server to get the current time, return a timestamp of 64
     utime_t testTimestamp = 64;
-    EXPECT_CALL(timeServerMock, getUtimeUs())
-        .WillOnce(Return(testTimestamp));
+    EXPECT_CALL(timeServerMock, getUtimeUs()).WillOnce(Return(testTimestamp));
 
     imuTelem.run();
 

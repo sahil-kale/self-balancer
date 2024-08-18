@@ -1,22 +1,18 @@
+#include <pb_decode.h>
+#include <pb_encode.h>
+
+#include "CommManager.hpp"
+#include "MessageQueueMock.hpp"
+#include "TransportLayerMock.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
-#include "TransportLayerMock.hpp"
-#include "MessageQueueMock.hpp"
-#include "CommManager.hpp"
-
-#include <pb_encode.h>
-#include <pb_decode.h>
 #include "messages/header/header.pb.h"
 
 using namespace ::testing;
 
-TEST(ExampleTest, Example) {
-    EXPECT_EQ(1, 1);
-}
+TEST(ExampleTest, Example) { EXPECT_EQ(1, 1); }
 
-TEST(CommManagerTest, QueueAndSendMessage)
-{
+TEST(CommManagerTest, QueueAndSendMessage) {
     TransportLayerMock transportLayerMock;
     MessageQueueMock messageQueueMock;
 
@@ -50,12 +46,11 @@ TEST(CommManagerTest, QueueAndSendMessage)
     pb_encode(&headerStream2, MessageHeader_fields, &message2.header);
 
     EXPECT_CALL(messageQueueMock, receive(_))
-    .WillOnce(DoAll(SetArgReferee<0>(message), Return(true)))
-    .WillOnce(DoAll(SetArgReferee<0>(message2), Return(true)))
-    .WillRepeatedly(Return(false));
+        .WillOnce(DoAll(SetArgReferee<0>(message), Return(true)))
+        .WillOnce(DoAll(SetArgReferee<0>(message2), Return(true)))
+        .WillRepeatedly(Return(false));
 
     // Expect a transport layer send call, with the following buffer:
-    
 
     // Create expected buffer
     uint8_t expectedBuffer[MessageHeader_size + 4 + MessageHeader_size + 2];
@@ -71,7 +66,6 @@ TEST(CommManagerTest, QueueAndSendMessage)
             sentBuffer.assign(buf, buf + length);
             return true;
         }));
-
 
     commManager.run();
 

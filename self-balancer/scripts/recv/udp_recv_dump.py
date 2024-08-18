@@ -5,7 +5,7 @@ import time
 DEFAULT_SERVER_IP = "10.0.0.203"
 DEFAULT_SERVER_PORT = 5007
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # create args for the server IP and port
     parser = argparse.ArgumentParser()
     parser.add_argument("--server_ip", type=str, default=DEFAULT_SERVER_IP)
@@ -29,4 +29,3 @@ if __name__ == '__main__':
         data, addr = sock.recvfrom(4096)
         # print the message alongside a timestamp accurate to us
         print(f"Timestamp: {time.time()} | Received message from server: {data}")
-

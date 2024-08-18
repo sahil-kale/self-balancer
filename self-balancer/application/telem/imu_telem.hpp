@@ -1,18 +1,18 @@
 #ifndef IMU_TELEM_HPP
 #define IMU_TELEM_HPP
-#include "MessageQueue.hpp"
 #include "IMU.hpp"
+#include "MessageQueue.hpp"
 #include "time.hpp"
 
 class IMUTelem {
-    public:
+   public:
     IMUTelem(MessageQueue& messageQueue, BaseIMU& imu, TimeServer& timeServer);
     void run();
 
-    private:
+   private:
     MessageQueue& messageQueue_;
     BaseIMU& imu_;
     TimeServer& timeServer_;
 };
 
-#endif // IMU_TELEM_HPP
+#endif  // IMU_TELEM_HPP

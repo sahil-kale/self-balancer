@@ -4,7 +4,7 @@ import argparse
 DEFAULT_SERVER_IP = "192.168.1.41"
 DEFAULT_SERVER_PORT = 5007
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # create args for the server IP and port
     parser = argparse.ArgumentParser()
     parser.add_argument("--server_ip", type=str, default=DEFAULT_SERVER_IP)
@@ -27,4 +27,3 @@ if __name__ == '__main__':
         # receive a message from the server
         data, addr = sock.recvfrom(1024)
         print(f"Received message from server: {data.decode()}")
-

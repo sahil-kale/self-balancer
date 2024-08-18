@@ -1,5 +1,6 @@
 from messages import *
 
+
 # generate the HEADER_SIZE_BYTES constant by serializing a test header
 def generate_header_size_bytes():
     testHeader = header_pb2.MessageHeader()
@@ -9,7 +10,9 @@ def generate_header_size_bytes():
     test = testHeader.SerializeToString()
     return len(test)
 
+
 HEADER_SIZE_BYTES = generate_header_size_bytes()
+
 
 def extract_header_contents(data):
     header = header_pb2.MessageHeader()

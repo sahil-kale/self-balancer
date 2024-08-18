@@ -1,14 +1,15 @@
 #include "motor_telem.hpp"
-#include <string.h>
+
 #include <pb_encode.h>
-#include "messages/telem/telem.pb.h"
+#include <string.h>
+
 #include "messages/header/header.pb.h"
+#include "messages/telem/telem.pb.h"
 
-MotorTelem::MotorTelem(MessageQueue& messageQueue, BaseMotor& motor, TimeServer& timeServer, MessageChannels channel) : messageQueue_(messageQueue), motor_(motor), timeServer_(timeServer), channel_(channel)
- {}
+MotorTelem::MotorTelem(MessageQueue& messageQueue, BaseMotor& motor, TimeServer& timeServer, MessageChannels channel)
+    : messageQueue_(messageQueue), motor_(motor), timeServer_(timeServer), channel_(channel) {}
 
-void MotorTelem::run()
-{
+void MotorTelem::run() {
     // Get the current and duty cycle from the motor
     float current = motor_.getCurrent();
     float dutyCycle = motor_.getDutyCycle();
