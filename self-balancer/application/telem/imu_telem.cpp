@@ -30,7 +30,7 @@ void IMUTelem::run() {
     MessageQueue::Message message;
     message.header.channel = MessageChannels_IMU_TELEM;
     message.header.timestamp = timeServer_.getUtimeUs();
-    message.header.length = sizeof(buffer);
-    memcpy(message.buffer, buffer, sizeof(buffer));
+    message.header.length = (uint32_t)stream.bytes_written;
+    memcpy(message.buffer, buffer, message.header.length);
     messageQueue_.send(message);
 }

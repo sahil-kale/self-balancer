@@ -7,7 +7,7 @@ enum MessageChannels {
 
 message MessageHeader {
     required MessageChannels channel = 1;
-    required uint64 timestamp = 2;
-    required uint32 length = 3;
+    required fixed64 timestamp = 2;
+    required fixed32 length = 3;
 }
 

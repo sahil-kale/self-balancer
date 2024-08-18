@@ -1,21 +1,32 @@
 import socket
 import argparse
 import time
-from channels import *
+from messages import *
 import struct
 from processing_utils import *
+from generated.messages.header import header_pb2
+from generated.messages.imu import imu_pb2
+from generated.messages.telem import telem_pb2
 
 DEFAULT_SERVER_IP = "10.0.0.203"
 DEFAULT_SERVER_PORT = 5007
 
-def process_message(data):
-    header = extract_header_contents(data)
-    print(f"Received message with header: {header}")
-    message_type = MessageChannel(header.message_type)
-    message = message_mapping[message_type]()
-    message.ParseFromString(data[header.ByteSize():])
-    print(f"Received message of type {message_type} with contents: {message}")
-    breakpoint()
+def process_messages(data):
+    while len(data) > HEADER_SIZE_BYTES:
+        header = extract_header_contents(data)
+        if header.channel == header_pb2.MessageChannels.IMU_TELEM:
+            message = imu_pb2.ImuTelem()
+        elif header.channel == header_pb2.MessageChannels.MOTOR_TELEM:
+            message = telem_pb2.MotorData()
+        else:
+            print(f"Unknown message type: {header.channel}")
+            return
+        
+        message.ParseFromString(data[HEADER_SIZE_BYTES:HEADER_SIZE_BYTES + header.length])
+
+        if header.channel == header_pb2.MessageChannels.IMU_TELEM:
+            print(f"Received message of type {header.channel} at timestamp {header.timestamp} with contents: {message}")
+        data = data[HEADER_SIZE_BYTES + header.length:]
 
 
 def main(socket):
@@ -23,7 +34,7 @@ def main(socket):
         # receive a message from the server
         data, addr = sock.recvfrom(1024)
         #print(f"Timestamp: {time.time()} | Received message from server: {data}")
-        process_message(data)
+        process_messages(data)
 
 
 if __name__ == '__main__':
