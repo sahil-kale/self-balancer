@@ -1,4 +1,5 @@
 #include "HAL_LSM6DS3.hpp"
+
 #include "esp_log.h"
 #include "string.h"
 #include "time.h"
@@ -8,11 +9,11 @@
 
 HAL_LSM6DS3::HAL_LSM6DS3() {
     imu_ctx.write_reg = [](void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len) -> int32_t {
-        return static_cast<HAL_LSM6DS3*>(handle)->platform_write(reg, bufp, len);
+        return static_cast<HAL_LSM6DS3 *>(handle)->platform_write(reg, bufp, len);
     };
 
     imu_ctx.read_reg = [](void *handle, uint8_t reg, uint8_t *bufp, uint16_t len) -> int32_t {
-        return static_cast<HAL_LSM6DS3*>(handle)->platform_read(reg, bufp, len);
+        return static_cast<HAL_LSM6DS3 *>(handle)->platform_read(reg, bufp, len);
     };
 
     imu_ctx.handle = this;
@@ -23,31 +24,27 @@ HAL_LSM6DS3::~HAL_LSM6DS3() {
 }
 
 void HAL_LSM6DS3::init(spi_host_device_t spi_host, uint8_t miso, uint8_t mosi, uint8_t clk, uint8_t cs) {
-    static spi_bus_config_t spi_bus_cfg = {
-        .mosi_io_num = mosi,
-        .miso_io_num = miso,
-        .sclk_io_num = clk,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-        .max_transfer_sz = 4096
-    };
+    static spi_bus_config_t spi_bus_cfg = {.mosi_io_num = mosi,
+                                           .miso_io_num = miso,
+                                           .sclk_io_num = clk,
+                                           .quadwp_io_num = -1,
+                                           .quadhd_io_num = -1,
+                                           .max_transfer_sz = 4096};
 
-    static spi_device_interface_config_t spi_dev_cfg = {
-        .command_bits = 8,
-        .address_bits = 8,
-        .dummy_bits = 0,
-        .mode = 3,
-        .duty_cycle_pos = 128,  // 50% duty cycle
-        .cs_ena_pretrans = 1,
-        .cs_ena_posttrans = 1,
-        .clock_speed_hz = 1000000,  // 1 MHz
-        .input_delay_ns = 0,
-        .spics_io_num = cs,
-        .flags = 0,
-        .queue_size = 1,
-        .pre_cb = NULL,
-        .post_cb = NULL
-    };
+    static spi_device_interface_config_t spi_dev_cfg = {.command_bits = 8,
+                                                        .address_bits = 8,
+                                                        .dummy_bits = 0,
+                                                        .mode = 3,
+                                                        .duty_cycle_pos = 128,  // 50% duty cycle
+                                                        .cs_ena_pretrans = 1,
+                                                        .cs_ena_posttrans = 1,
+                                                        .clock_speed_hz = 1000000,  // 1 MHz
+                                                        .input_delay_ns = 0,
+                                                        .spics_io_num = cs,
+                                                        .flags = 0,
+                                                        .queue_size = 1,
+                                                        .pre_cb = NULL,
+                                                        .post_cb = NULL};
 
     esp_err_t ret;
 
@@ -87,13 +84,12 @@ void HAL_LSM6DS3::init(spi_host_device_t spi_host, uint8_t miso, uint8_t mosi, u
         printf("Failed to read WHO_AM_I register\n");
     }
 
-    const float gyro_sensitivity = 8.75; // mdps/LSB (TODO: Get this from polling the device mapping from data rate)
+    const float gyro_sensitivity = 8.75;  // mdps/LSB (TODO: Get this from polling the device mapping from data rate)
     this->gyro_scale = gyro_sensitivity * (M_PI / 180.0f) * 0.001f;  // Convert mdps to rad/s
 
     // get the FS value for accelerometer
-    const float accel_sensitivity = 0.061; // mg/LSB (TODO: Get this from polling the device mapping from data rate)
+    const float accel_sensitivity = 0.061;  // mg/LSB (TODO: Get this from polling the device mapping from data rate)
     this->accel_scale = accel_sensitivity * 9.81f / 1000.0f;  // Convert mg to m/s²
-
 }
 
 void HAL_LSM6DS3::poll() {
@@ -107,7 +103,7 @@ void HAL_LSM6DS3::poll() {
         for (int i = 0; i < 3; i++) {
             accel_data[i] = accel_data_raw[i] * accel_scale;  // Convert mg to m/s²
         }
-        
+
         // store in acceleration vector
         this->acceleration.x = accel_data[0];
         this->acceleration.y = accel_data[1];
@@ -115,8 +111,8 @@ void HAL_LSM6DS3::poll() {
         this->acceleration.timestamp = (uint32_t)time(NULL);
         this->acceleration.valid = true;
 #ifdef PRINT_DATA
-        printf("Timestamp: %lu, Acceleration: x=%.2f m/s², y=%.2f m/s², z=%.2f m/s²\n", 
-                (unsigned long)time(NULL), accel_data[0], accel_data[1], accel_data[2]);
+        printf("Timestamp: %lu, Acceleration: x=%.2f m/s², y=%.2f m/s², z=%.2f m/s²\n", (unsigned long)time(NULL), accel_data[0],
+               accel_data[1], accel_data[2]);
 #endif
     }
 
@@ -135,8 +131,8 @@ void HAL_LSM6DS3::poll() {
         this->gyro.timestamp = (uint32_t)time(NULL);
         this->gyro.valid = true;
 #ifdef PRINT_DATA
-        printf("Timestamp: %lu, Gyroscope: x=%.2f rad/s, y=%.2f rad/s, z=%.2f rad/s\n", 
-                (unsigned long)time(NULL), gyro_data[0], gyro_data[1], gyro_data[2]);
+        printf("Timestamp: %lu, Gyroscope: x=%.2f rad/s, y=%.2f rad/s, z=%.2f rad/s\n", (unsigned long)time(NULL), gyro_data[0],
+               gyro_data[1], gyro_data[2]);
 #endif
     }
 
@@ -145,15 +141,13 @@ void HAL_LSM6DS3::poll() {
         lsm6ds3_temperature_raw_get(&imu_ctx, &temperature_raw);
         this->temperature = temperature_raw / 16.0f + 25.0f;  // Convert to °C
 #ifdef PRINT_DATA
-        printf("Timestamp: %lu, Temperature: %.2f °C\n", 
-                (unsigned long)time(NULL), this->temperature);
+        printf("Timestamp: %lu, Temperature: %.2f °C\n", (unsigned long)time(NULL), this->temperature);
 #endif
     }
 }
 
 // Function to write to a register
 int32_t HAL_LSM6DS3::platform_write(uint8_t reg, const uint8_t *bufp, uint16_t len) {
-
     spi_transaction_t t;
     memset(&t, 0, sizeof(t));  // Zero out the transaction
     uint8_t data[len + 1];
@@ -171,13 +165,9 @@ int32_t HAL_LSM6DS3::platform_write(uint8_t reg, const uint8_t *bufp, uint16_t l
     return 0;
 }
 
-BaseIMU::Vector3D HAL_LSM6DS3::getAcceleration() {
-    return this->acceleration;
-}
+BaseIMU::Vector3D HAL_LSM6DS3::getAcceleration() { return this->acceleration; }
 
-BaseIMU::Vector3D HAL_LSM6DS3::getGyro() {
-    return this->gyro;
-}
+BaseIMU::Vector3D HAL_LSM6DS3::getGyro() { return this->gyro; }
 
 // Function to read from a register
 int32_t HAL_LSM6DS3::platform_read(uint8_t reg, uint8_t *bufp, uint16_t len) {
@@ -189,7 +179,7 @@ int32_t HAL_LSM6DS3::platform_read(uint8_t reg, uint8_t *bufp, uint16_t len) {
     uint8_t rx_data[len + 1];
     memset(rx_data, 0, len + 1);
 
-    tx_data[0] = reg | 0x80;  // Set the read bit
+    tx_data[0] = reg | 0x80;   // Set the read bit
     t.length = (len + 1) * 8;  // Length is in bits
     t.tx_buffer = tx_data;
     t.rxlength = len * 8;

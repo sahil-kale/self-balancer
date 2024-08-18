@@ -6,18 +6,17 @@
 #include "freertos/queue.h"
 
 class HAL_MessageQueue : public MessageQueue {
-    public:
+   public:
     HAL_MessageQueue(uint8_t ucQueueStorage[QUEUE_STORAGE_SIZE_BYTES]);
     ~HAL_MessageQueue();
 
     bool send(const Message& message) override;
     bool receive(Message& message) override;
 
-    private:
+   private:
     StaticQueue_t xStaticQueue;
     QueueHandle_t xQueue;
     uint8_t* ucQueueStorage = nullptr;
 };
 
-
-#endif // HAL_MESSAGE_QUEUE_HPP
+#endif  // HAL_MESSAGE_QUEUE_HPP

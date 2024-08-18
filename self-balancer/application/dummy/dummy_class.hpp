@@ -2,7 +2,7 @@
 #define DUMMY_CLASS_HPP
 
 class dummy_class {
-    public:
+   public:
     dummy_class();
     int add(int a, int b);
 };

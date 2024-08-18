@@ -9,22 +9,21 @@
 #include "lwip/sys.h"
 
 class HAL_Wifi : public TransportLayer {
-    public:
+   public:
     HAL_Wifi();
     virtual ~HAL_Wifi();
 
     void init();
     void run();
 
-    bool send(const uint8_t* buffer, size_t length);
-    size_t receive(uint8_t* buffer, size_t length);
+    bool send(const uint8_t *buffer, size_t length);
+    size_t receive(uint8_t *buffer, size_t length);
 
     static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 
-
-    private:
+   private:
     void init_udp_server_task(void);
-        
+
     int8_t sock = 0;
     struct sockaddr_storage source_addr;
     esp_netif_t *netif_interface;
@@ -32,4 +31,4 @@ class HAL_Wifi : public TransportLayer {
     bool client_connected = false;
 };
 
-#endif // HAL_WIFI_HPP
+#endif  // HAL_WIFI_HPP

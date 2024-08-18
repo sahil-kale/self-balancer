@@ -6,7 +6,7 @@
 #include "lsm6ds3_reg.h"
 
 class HAL_LSM6DS3 : public BaseIMU {
-    public:
+   public:
     HAL_LSM6DS3();
     virtual ~HAL_LSM6DS3();
 
@@ -19,14 +19,14 @@ class HAL_LSM6DS3 : public BaseIMU {
      * @param cs The chip select pin
      */
     void init(spi_host_device_t spi_host, uint8_t miso, uint8_t mosi, uint8_t clk, uint8_t cs);
-    void poll(); // Call at 1ms
+    void poll();  // Call at 1ms
 
     Vector3D getAcceleration() override;
     Vector3D getGyro() override;
 
     float getTemperature();
 
-    private:
+   private:
     bool imuInitialized = false;
     Vector3D acceleration;
     Vector3D gyro;
@@ -43,4 +43,4 @@ class HAL_LSM6DS3 : public BaseIMU {
     int32_t platform_write(uint8_t reg, const uint8_t *bufp, uint16_t len);
 };
 
-#endif // HAL_LSM6DS3_HPP
+#endif  // HAL_LSM6DS3_HPP

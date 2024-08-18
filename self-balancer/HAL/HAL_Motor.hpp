@@ -1,17 +1,19 @@
 #ifndef HAL_MOTOR_HPP
 #define HAL_MOTOR_HPP
 
-#include "Motor.hpp"
 #include <stdint.h>
+
+#include "Motor.hpp"
 #include "driver/mcpwm_prelude.h"
 #include "esp_adc/adc_oneshot.h"
 
 class HAL_Motor : public BaseMotor {
-    public:
+   public:
     HAL_Motor(const char* tag);
     virtual ~HAL_Motor();
 
-    void init(mcpwm_timer_handle_t timer, uint8_t pwmGpioNum, float dutyCycleToTicksConversion, adc_oneshot_unit_handle_t* adcHandle, adc_channel_t adcChannel, float currentConversionFactor);
+    void init(mcpwm_timer_handle_t timer, uint8_t pwmGpioNum, float dutyCycleToTicksConversion,
+              adc_oneshot_unit_handle_t* adcHandle, adc_channel_t adcChannel, float currentConversionFactor);
 
     /**
      * @brief Set the duty cycle of the motor (-1.0 to 1.0)
@@ -30,7 +32,7 @@ class HAL_Motor : public BaseMotor {
      */
     float getDutyCycle() override;
 
-    private:
+   private:
     float voltageConversionFactor;
     float currentConversionFactor;
     float current;
@@ -43,4 +45,4 @@ class HAL_Motor : public BaseMotor {
     float dutyCycle_;
 };
 
-#endif // HAL_MOTOR_HPP
+#endif  // HAL_MOTOR_HPP

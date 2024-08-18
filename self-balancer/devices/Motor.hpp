@@ -2,7 +2,7 @@
 #define MOTOR_HPP
 
 class BaseMotor {
-    public:
+   public:
     /**
      * @brief Set the duty cycle of the motor (-1.0 to 1.0)
      * @note: -1.0 is full reverse, 1.0 is full forward. Direction is determined by the motor.
@@ -18,9 +18,9 @@ class BaseMotor {
     /**
      * @brief Get the duty cycle of the motor (-1.0 to 1.0)
      * @note: -1.0 is full reverse, 1.0 is full forward. Direction is determined by the motor.
-     * @return float 
+     * @return float
      */
     virtual float getDutyCycle() = 0;
 };
 
-#endif // MOTOR_HPP
+#endif  // MOTOR_HPP

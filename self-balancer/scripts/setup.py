@@ -14,14 +14,11 @@ apt_components = [
     "build-essential",
     "gdb",
     "doxygen",
-    "cmake"
+    "cmake",
 ]
 
 # components to install via pip
-pip_components = [
-    "protobuf",
-    "grpcio-tools"
-]
+pip_components = ["protobuf", "grpcio-tools", "black"]
 
 # install apt components
 for component in apt_components:

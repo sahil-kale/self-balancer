@@ -2,19 +2,19 @@
 #define MOTOR_TELEM_HPP
 #include "MessageQueue.hpp"
 #include "Motor.hpp"
-#include "time.hpp"
 #include "messages/header/header.pb.h"
+#include "time.hpp"
 
 class MotorTelem {
-    public:
+   public:
     MotorTelem(MessageQueue& messageQueue, BaseMotor& motor, TimeServer& timeServer, MessageChannels channel);
     void run();
 
-    private:
+   private:
     MessageQueue& messageQueue_;
     BaseMotor& motor_;
     TimeServer& timeServer_;
     MessageChannels channel_;
 };
 
-#endif // IMU_TELEM_HPP
+#endif  // IMU_TELEM_HPP

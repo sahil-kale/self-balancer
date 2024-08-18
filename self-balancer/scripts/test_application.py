@@ -1,11 +1,14 @@
 import os
 import argparse
 
+
 def main(debug):
     # first, generate the messages
-    os.system("python3 scripts/generate_protobuf.py") # todo: just run the python func??
+    os.system(
+        "python3 scripts/generate_protobuf.py"
+    )  # todo: just run the python func??
 
-    #chdir to "application"
+    # chdir to "application"
     os.chdir("application")
 
     # make a build directory
@@ -26,6 +29,7 @@ def main(debug):
     else:
         os.system("./application_tests")
 
+
 if __name__ == "__main__":
     # create an arg parser for whether to debug or not
     parser = argparse.ArgumentParser()
@@ -33,4 +37,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.debug)
-

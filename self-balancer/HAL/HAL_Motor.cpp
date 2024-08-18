@@ -1,16 +1,17 @@
 #include "HAL_Motor.hpp"
-#include "esp_log.h"
+
 #include "esp_adc/adc_oneshot.h"
+#include "esp_log.h"
 
 HAL_Motor::HAL_Motor(const char* tag) : TAG(tag) {
     currentConversionFactor = 0.0f;
     current = 0.0f;
 }
 
-HAL_Motor::~HAL_Motor() {
-}
+HAL_Motor::~HAL_Motor() {}
 
-void HAL_Motor::init(mcpwm_timer_handle_t timer, uint8_t pwmGpioNum, float dutyCycleToTicksConversion, adc_oneshot_unit_handle_t* adcHandle, adc_channel_t adcChannel, float currentConversionFactor) {
+void HAL_Motor::init(mcpwm_timer_handle_t timer, uint8_t pwmGpioNum, float dutyCycleToTicksConversion,
+                     adc_oneshot_unit_handle_t* adcHandle, adc_channel_t adcChannel, float currentConversionFactor) {
     this->currentConversionFactor = currentConversionFactor;
     this->dutyCycleToTicksConversion = dutyCycleToTicksConversion;
     this->adcHandle = adcHandle;
@@ -18,18 +19,15 @@ void HAL_Motor::init(mcpwm_timer_handle_t timer, uint8_t pwmGpioNum, float dutyC
 
     mcpwm_oper_handle_t oper = NULL;
     mcpwm_operator_config_t operator_config = {
-        .group_id = 0, // operator must be in the same group to the timer
+        .group_id = 0,  // operator must be in the same group to the timer
     };
     ESP_ERROR_CHECK(mcpwm_new_operator(&operator_config, &oper));
     ESP_LOGI(TAG, "Connect timer and operator");
     ESP_ERROR_CHECK(mcpwm_operator_connect_timer(oper, timer));
 
-    mcpwm_comparator_config_t comparator_config = {
-        .flags = 
-        {
-            .update_cmp_on_tez = true, // update when timer counts to 0
-        }
-    };
+    mcpwm_comparator_config_t comparator_config = {.flags = {
+                                                       .update_cmp_on_tez = true,  // update when timer counts to 0
+                                                   }};
 
     comparatorHandle = NULL;
     ESP_ERROR_CHECK(mcpwm_new_comparator(oper, &comparator_config, &comparatorHandle));
@@ -43,11 +41,11 @@ void HAL_Motor::init(mcpwm_timer_handle_t timer, uint8_t pwmGpioNum, float dutyC
     setDutyCycle(0.0f);
 
     // go high on counter empty
-    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(generator,
-                                                              MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(
+        generator, MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
     // go low on compare threshold
-    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(generator,
-                                                                MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparatorHandle, MCPWM_GEN_ACTION_LOW)));
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(
+        generator, MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparatorHandle, MCPWM_GEN_ACTION_LOW)));
 
     adc_oneshot_chan_cfg_t config = {
         .atten = ADC_ATTEN_DB_12,
@@ -58,7 +56,6 @@ void HAL_Motor::init(mcpwm_timer_handle_t timer, uint8_t pwmGpioNum, float dutyC
     ESP_ERROR_CHECK(adc_oneshot_config_channel(*adcHandle, adcChannel, &config));
     // configure voltage conversion factor
     voltageConversionFactor = (3.1f / (1 << config.bitwidth));
-
 }
 
 void HAL_Motor::setDutyCycle(float dutyCycle) {
@@ -77,6 +74,4 @@ float HAL_Motor::getCurrent() {
     return current;
 }
 
-float HAL_Motor::getDutyCycle() {
-    return dutyCycle_;
-}
+float HAL_Motor::getDutyCycle() { return dutyCycle_; }

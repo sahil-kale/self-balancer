@@ -1,20 +1,20 @@
 
+#include <string.h>
+
+#include "app.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "lsm6ds3_reg.h"
+#include "nvs_flash.h"
 #include "sdkconfig.h"
 #include "time.h"
-#include <string.h>
-#include "nvs_flash.h"
-#include "app.h"
 
 #define IMU_SPI_HOST SPI3_HOST
 #define SPI1_PIN_NUM_MISO 13
 #define SPI1_PIN_NUM_MOSI 11
-#define SPI1_PIN_NUM_CLK  12
-#define SPI1_PIN_NUM_CS   10
-
+#define SPI1_PIN_NUM_CLK 12
+#define SPI1_PIN_NUM_CS 10
 
 void app_main(void) {
     printf("Hello world!\n");
@@ -25,7 +25,7 @@ void app_main(void) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
-    ESP_ERROR_CHECK( ret );
+    ESP_ERROR_CHECK(ret);
 
     app_run();
 
