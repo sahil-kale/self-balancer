@@ -2,7 +2,8 @@ syntax = "proto2";
 
 enum MessageChannels {
     IMU_TELEM = 0;
-    MOTOR_TELEM = 1;
+    MOTOR_L_TELEM = 1;
+    MOTOR_R_TELEM = 2;
 }
 
 message MessageHeader {

@@ -38,7 +38,7 @@ TEST(CommManagerTest, QueueAndSendMessage)
     pb_encode(&headerStream, MessageHeader_fields, &message.header);
 
     MessageQueue::Message message2;
-    message2.header.channel = MessageChannels_MOTOR_TELEM;
+    message2.header.channel = MessageChannels_MOTOR_L_TELEM;
     message2.header.timestamp = 0;
     message2.header.length = 2;
     message2.buffer[0] = 0x05;

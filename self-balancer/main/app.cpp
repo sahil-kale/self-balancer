@@ -68,8 +68,8 @@ static adc_oneshot_unit_init_cfg_t init_config1 = {
 
 static CommManager commManager(wifi, messageQueue);
 static IMUTelem imuTelem(messageQueue, imu, timeServer);
-static MotorTelem leftMotorTelem(messageQueue, leftMotor, timeServer);
-static MotorTelem rightMotorTelem(messageQueue, rightMotor, timeServer);
+static MotorTelem leftMotorTelem(messageQueue, leftMotor, timeServer, MessageChannels_MOTOR_L_TELEM);
+static MotorTelem rightMotorTelem(messageQueue, rightMotor, timeServer, MessageChannels_MOTOR_R_TELEM);
 
 static SemaphoreHandle_t xSemaphore = NULL;
 static StaticSemaphore_t xSemaphoreBuffer;

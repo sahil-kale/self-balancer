@@ -16,7 +16,7 @@ TEST(MotorTelemTest, VerifymotorMessageConstruction) {
     MotorMock motorMock;
     MessageQueueMock messageQueueMock;
     TimeServerMock timeServerMock;
-    MotorTelem motorTelem(messageQueueMock, motorMock, timeServerMock);
+    MotorTelem motorTelem(messageQueueMock, motorMock, timeServerMock, MessageChannels_MOTOR_L_TELEM);
 
     // Expect the motor to be polled for the current and duty cycle measurements
     EXPECT_CALL(motorMock, getCurrent())
@@ -49,7 +49,7 @@ TEST(MotorTelemTest, VerifymotorMessageConstruction) {
     motorTelem.run();
 
     // Verify the message is the same as the expected message
-    EXPECT_EQ(message.header.channel, MessageChannels_MOTOR_TELEM);
+    EXPECT_EQ(message.header.channel, MessageChannels_MOTOR_L_TELEM);
     EXPECT_EQ(message.header.timestamp, testTimestamp);
     EXPECT_EQ(message.header.length, stream.bytes_written);
     // Expect that the buffers are equal up to the length of the buffer
