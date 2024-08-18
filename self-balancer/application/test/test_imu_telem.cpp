@@ -38,8 +38,6 @@ TEST(IMUTelemTest, VerifyImuMessageConstruction) {
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
     pb_encode(&stream, ImuTelem_fields, &imuTelemMessage);
 
-    // Verify the message was sent to the message queue - should store the buffer to 2 vectors, one for gyro and one for accel
-    // and expect the call twice
     MessageQueue::Message message;
     EXPECT_CALL(messageQueueMock, send(_))
         .WillRepeatedly(DoAll(SaveArg<0>(&message), Return(true)));
@@ -54,7 +52,7 @@ TEST(IMUTelemTest, VerifyImuMessageConstruction) {
     // Verify the message is the same as the expected message
     EXPECT_EQ(message.header.channel, MessageChannels_IMU_TELEM);
     EXPECT_EQ(message.header.timestamp, testTimestamp);
-    EXPECT_EQ(message.header.length, sizeof(buffer));
+    EXPECT_EQ(message.header.length, stream.bytes_written);
     // Expect that the buffers are equal up to the length of the buffer
     EXPECT_THAT(std::vector<uint8_t>(message.buffer, message.buffer + message.header.length), ElementsAreArray(buffer));
 }

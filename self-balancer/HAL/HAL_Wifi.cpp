@@ -205,7 +205,7 @@ bool HAL_Wifi::send(const uint8_t* buffer, size_t length) {
         ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
     }
 
-    ESP_LOGI(TAG, "Sent %d bytes", err);
+    //ESP_LOGI(TAG, "Sent %d bytes", err);
 
     return true;
 }

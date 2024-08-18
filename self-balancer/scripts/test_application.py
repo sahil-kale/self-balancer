@@ -3,7 +3,7 @@ import argparse
 
 def main(debug):
     # first, generate the messages
-    os.system("python3 scripts/generate_protobuf.py.py") # todo: just run the python func??
+    os.system("python3 scripts/generate_protobuf.py") # todo: just run the python func??
 
     #chdir to "application"
     os.chdir("application")
