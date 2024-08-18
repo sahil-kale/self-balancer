@@ -70,18 +70,18 @@ static IMUTelem imuTelem(messageQueue, imu, timeServer);
 static MotorTelem leftMotorTelem(messageQueue, leftMotor, timeServer, MessageChannels_MOTOR_L_TELEM);
 static MotorTelem rightMotorTelem(messageQueue, rightMotor, timeServer, MessageChannels_MOTOR_R_TELEM);
 
-static SemaphoreHandle_t xSemaphore = NULL;
+static SemaphoreHandle_t task1msSemaphore = NULL;
 static StaticSemaphore_t xSemaphoreBuffer;
 
 static void periodic_timer_callback(void* arg);
 
-static esp_timer_handle_t periodic_timer;
-const esp_timer_create_args_t periodic_timer_args = {
+static esp_timer_handle_t timer_task1ms;
+const esp_timer_create_args_t timer_task1ms_args = {
     .callback = &periodic_timer_callback, .dispatch_method = ESP_TIMER_ISR, .name = "1msTimer"};
 
 void task_1ms(void* pvParameters) {
     while (true) {
-        if (xSemaphoreTake(xSemaphore, portMAX_DELAY) == pdTRUE) {
+        if (xSemaphoreTake(task1msSemaphore, portMAX_DELAY) == pdTRUE) {
             imu.poll();
             leftMotor.setDutyCycle(0.6);
             rightMotor.setDutyCycle(0.6);
@@ -131,10 +131,10 @@ void app_run() {
     wifi.init();
 
     // Init 1ms semaphore and logic
-    xSemaphore = xSemaphoreCreateBinaryStatic(&xSemaphoreBuffer);
+    task1msSemaphore = xSemaphoreCreateBinaryStatic(&xSemaphoreBuffer);
 
-    ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
+    ESP_ERROR_CHECK(esp_timer_create(&timer_task1ms_args, &timer_task1ms));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(timer_task1ms, 1000));
 
     xTaskCreatePinnedToCore(task_1ms, "task_1ms", 4096, NULL, 5, NULL, 1);
 
@@ -145,6 +145,6 @@ void app_run() {
 
 static void periodic_timer_callback(void* arg) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xSemaphoreGiveFromISR(xSemaphore, &xHigherPriorityTaskWoken);
+    xSemaphoreGiveFromISR(task1msSemaphore, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
