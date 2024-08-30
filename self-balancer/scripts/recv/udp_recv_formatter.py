@@ -15,6 +15,7 @@ DEFAULT_SERVER_IP = "10.0.0.202"
 DEFAULT_SERVER_PORT = 5007
 
 kf = KalmanFilter()
+counter = 0
 
 def process_messages(data, log_file, print_msgs=False):
     while len(data) > HEADER_SIZE_BYTES:
@@ -43,6 +44,10 @@ def process_messages(data, log_file, print_msgs=False):
 
         if header.channel == header_pb2.MessageChannels.IMU_TELEM:
             kf.run(message)
+    global counter
+    counter += 1
+    if counter % 10 == 0:
+        kf.plot()
 
 
 def log_message_to_file(header, message, file_obj):
