@@ -9,9 +9,12 @@ from generated.messages.imu import imu_pb2
 from generated.messages.telem import telem_pb2
 from google.protobuf.json_format import MessageToJson
 
-DEFAULT_SERVER_IP = "10.0.0.203"
+from kalman_filter_test import *
+
+DEFAULT_SERVER_IP = "10.0.0.202"
 DEFAULT_SERVER_PORT = 5007
 
+kf = KalmanFilter()
 
 def process_messages(data, log_file, print_msgs=False):
     while len(data) > HEADER_SIZE_BYTES:
@@ -37,6 +40,9 @@ def process_messages(data, log_file, print_msgs=False):
         if print_msgs:
             print(f"Timestamp: {header.timestamp}")
             print(message)
+
+        if header.channel == header_pb2.MessageChannels.IMU_TELEM:
+            kf.run(message)
 
 
 def log_message_to_file(header, message, file_obj):
