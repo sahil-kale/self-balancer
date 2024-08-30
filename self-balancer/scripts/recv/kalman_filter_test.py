@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from generated.messages.imu import imu_pb2
 
 class KalmanFilter:
@@ -48,6 +49,14 @@ class KalmanFilter:
         ])
 
         self.X = np.array([0, 0, 0, 0, 0, 0])
+
+        # Initialize storage for plotting
+        self.state_history = []
+        self.measurement_history = []
+        # Plot initialization variables
+        self.fig, self.ax = None, None
+        self.lines = None
+
 
     def compute_matrix_with_dt(self, matrix, dt):
         # Replace "-dt" with -dt and "dt" with dt
@@ -111,7 +120,30 @@ class KalmanFilter:
         Z = np.array([theta_x, theta_y, theta_z])
 
         self.X, self.P = self.kalman_filter_update(self.X, self.P, Z, self.R_raw, self.H)
+        # Store state history for plotting
+        self.state_history.append(self.X[:2])  # Store only the first 2 states (Euler angles)
+        self.measurement_history.append(Z)
         
     def plot(self):
-        # in real time, plot the data
+        if self.fig is None or self.ax is None or self.lines is None:
+            # Initialize plot if not already done
+            plt.ion()  # Turn on interactive mode
+            self.fig, self.ax = plt.subplots()
+            self.ax.set_title('Real-Time Kalman Filter State Estimates')
+            self.ax.set_xlabel('Time step')
+            self.ax.set_ylabel('State values (Euler angles in degrees)')
+
+            # Initialize line objects for three states (Euler angles)
+            self.lines = [self.ax.plot([], [], label=f'State {i}')[0] for i in range(3)]
+            self.ax.legend()
+
+        # Update plot with new data
+        for i, state in enumerate(zip(*self.state_history)):  # Unpack state history for plotting
+            self.lines[i].set_data(range(len(state)), state)
+            self.ax.set_xlim(0, len(state))
+            self.ax.set_ylim(min(state) - 5, max(state) + 5)
+
+        plt.draw()
+        plt.pause(0.0001)  # Pause to update the plot in real-time
+        print(f"State estimate: {self.X[:2]}")
         
